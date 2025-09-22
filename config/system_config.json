@@ -1,0 +1,93 @@
+{
+  "camera": {
+    "device_id": 0,
+    "resolution": {
+      "width": 1280,
+      "height": 720
+    },
+    "fps": 30,
+    "auto_focus": true,
+    "exposure": -1
+  },
+  "ai_detection": {
+    "model_path": "models/waste_detection.rknn",
+    "input_size": 640,
+    "confidence_threshold": 0.6,
+    "nms_threshold": 0.45,
+    "max_detections": 10,
+    "detection_interval": 0.1,
+    "use_gpu": false
+  },
+  "motion_detection": {
+    "enable_motion_detection": true,
+    "motion_threshold": 500,
+    "min_contour_area": 1000,
+    "detection_cooldown": 10.0,
+    "history": 500,
+    "dist2_threshold": 400.0,
+    "detect_shadows": true,
+    "blur_kernel_size": 5,
+    "kernel_size": 3
+  },
+  "api": {
+    "api_url": "https://api.siliconflow.cn/v1/chat/completions",
+    "api_key": "sk-oewfivbcmnepygirqfqaabbgmwbuivjtuignkhopbrqukygx",
+    "model_name": "THUDM/GLM-4.1V-9B-Thinking",
+    "max_retries": 3,
+    "timeout": 30
+  },
+  "ui": {
+    "window_title": "废弃物AI识别指导投放系统",
+    "fullscreen": false,
+    "window_size": {
+      "width": 1024,
+      "height": 768
+    },
+    "theme": "modern",
+    "language": "zh_CN",
+    "auto_hide_guidance": true,
+    "guidance_display_time": 5000
+  },
+  "audio": {
+    "enable_voice": true,
+    "voice_language": "zh",
+    "volume": 0.8,
+    "speech_rate": 150
+  },
+  "logging": {
+    "level": "INFO",
+    "file_path": "logs/waste_detection.log",
+    "max_file_size": "10MB",
+    "backup_count": 5,
+    "console_output": true
+  },
+  "data": {
+    "save_detection_results": true,
+    "save_images": false,
+    "data_path": "data/detection_results",
+    "max_data_age_days": 30
+  },
+  "performance": {
+    "max_fps": 30,
+    "processing_threads": 2,
+    "buffer_size": 10,
+    "memory_limit_mb": 1024
+  },
+  "io_control": {
+    "enable_io_control": false,
+    "ir_sensor_pin": 18,
+    "detection_delay": 0.5,
+    "detection_timeout": 10,
+    "debounce_time": 0.1
+  },
+  "animation": {
+    "enable_animations": true,
+    "particle_count": 20,
+    "animation_duration": 3000,
+    "success_animation_duration": 2000,
+    "pulse_animation_fps": 20,
+    "enable_animation_window": true,
+    "animation_window_always_on_top": false,
+    "gif_directory": "res/gif"
+  }
+}
