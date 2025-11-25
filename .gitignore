@@ -31,3 +31,5 @@ data/captured_images/motion_detected_20251010_171021_427.jpg
 data/captured_images/motion_detected_20251010_171056_988.jpg
 data/captured_images/motion_detected_20251010_171148_118.jpg
 data/captured_images/motion_detected_20251010_171200_778.jpg
+logs/*
+
