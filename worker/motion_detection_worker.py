@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
 运动检测工作线程 - 废弃物AI识别指导投放系统
@@ -92,12 +92,12 @@ class MotionDetectionWorker(QThread):
     def stop(self):
         '''停止线程'''
         self.is_running = False
-        self.wait()
-        logging.info('运动检测工作线程已停止')
+        self.requestInterruption()
+        if not self.wait(5000):
+            logging.warning('运动检测工作线程停止超时，已请求中断')
+        else:
+            logging.info('运动检测工作线程已停止')
 
-    # ---------------------------
-    # 线程主循环
-    # ---------------------------
     def run(self):
         self.is_running = True
         logging.info('运动检测工作线程开始运行')
@@ -264,8 +264,12 @@ class MotionDetectionWorker(QThread):
         state_info: Optional[Dict[str, Any]],
     ):
         try:
+            if self.isInterruptionRequested():
+                return
             logging.info('开始调用大模型API识别...')
             result = self.api_client.call_api(image_path)
+            if self.isInterruptionRequested():
+                return
 
             if not result:
                 self.error_occurred.emit('API识别失败')

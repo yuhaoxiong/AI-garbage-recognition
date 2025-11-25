@@ -77,6 +77,7 @@ class APIClient:
                         if result:
                             result['image_path'] = image_path
                             result['timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                            result.setdefault('detection_method', 'API调用')
                             return result
                 except Exception as e:
                     self.logger.warning(f"API调用尝试 {attempt + 1} 失败: {e}")
@@ -125,11 +126,12 @@ class APIClient:
                     "content": [
                         {
                             "type": "text",
-                            "text": """请识别图片中的废弃物类型，并按照以下格式返回JSON结果：
+                            "text": """请识别图片中的物品，不要回答未获取到，并严格按照以下 JSON 格式返回信息：
 {
-    "category": "垃圾分类（可回收物/有害垃圾/湿垃圾/干垃圾）",
-    "confidence": 0.85,
-    "description": "详细描述和投放指导"
+    "category": "垃圾分类-细分类-具体物品名称",
+    "composition": "垃圾的主要组成成分",
+    "degradation_time": "该垃圾在自然环境中的大致降解时间",
+    "recycling_value": "垃圾的回收利用价值与处理建议"
 }"""
                         },
                         {
@@ -190,73 +192,62 @@ class APIClient:
             if not content:
                 self.logger.error("API响应内容为空")
                 return None
-            
+
+            # 打印原始JSON文本，便于排查格式问题
+            self.logger.debug("API原始JSON文本: %s", content)
+
             # 尝试解析JSON
             try:
                 result = json.loads(content)
-                return result
             except json.JSONDecodeError:
-                # 如果不是JSON格式，尝试提取关键信息
-                return self._extract_info_from_text(content)
-            
+                self.logger.error("API原始JSON文本: %s", content)
+                self.logger.error("API响应不是有效的JSON格式")
+                return self._default_result()
+
+            return self._normalize_result(result)
+
         except Exception as e:
             self.logger.error(f"解析API响应失败: {e}")
             return None
     
-    def _extract_info_from_text(self, text: str) -> Dict[str, Any]:
+    def _normalize_result(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        从文本中提取信息
-
-        Args:
-            text: 响应文本
-
-        Returns:
-            提取的信息字典
+        规范化模型返回的数据结构，确保字段完整。
         """
-        # 层级关键词匹配
-        hierarchical_categories = {
-            '可回收物': {
-                '塑料类': ['塑料', '瓶子', '塑料瓶', '矿泉水瓶'],
-                '纸类': ['纸', '纸箱', '报纸', '书本'],
-                '金属类': ['金属', '罐子', '易拉罐', '铁罐'],
-                '玻璃类': ['玻璃', '玻璃瓶', '酒瓶']
-            },
-            '有害垃圾': {
-                '电池类': ['电池', '干电池', '蓄电池'],
-                '灯管类': ['灯管', '节能灯', '日光灯'],
-                '药品类': ['药品', '药物', '过期药'],
-                '化学类': ['油漆', '化学', '农药']
-            },
-            '厨余垃圾': {
-                '果皮类': ['果皮', '苹果皮', '香蕉皮', '橘子皮'],
-                '蔬菜类': ['菜叶', '蔬菜', '白菜', '萝卜'],
-                '剩菜类': ['剩饭', '剩菜', '食物残渣'],
-                '骨头类': ['骨头', '鱼骨', '鸡骨']
-            },
-            '其他垃圾': {
-                '织物类': ['衣物', '布料', '破旧衣服'],
-                '陶瓷类': ['陶瓷', '瓷器', '破碗'],
-                '其他类': ['纸巾', '尿布', '烟蒂', '灰尘']
-            }
+        category = str(data.get('category', '')).strip()
+        if not category:
+            category = '其他垃圾-其他类-未知物品'
+        elif category.count('-') < 2:
+            category = f'{category}-未细分-未知物品'
+
+        normalized = {
+            'category': category,
+            'composition': str(data.get('composition', '暂未获取到组成信息')).strip(),
+            'degradation_time': str(data.get('degradation_time', '暂未获取到降解时间参考')).strip(),
+            'recycling_value': str(data.get('recycling_value', '暂未获取到回收利用建议')).strip()
         }
 
-        text_lower = text.lower()
+        description_parts = []
+        if normalized['composition'] and normalized['composition'] != '暂未获取到组成信息':
+            description_parts.append(f"组成成分：{normalized['composition']}")
+        if normalized['degradation_time'] and normalized['degradation_time'] != '暂未获取到降解时间参考':
+            description_parts.append(f"降解时间：{normalized['degradation_time']}")
+        if normalized['recycling_value'] and normalized['recycling_value'] != '暂未获取到回收利用建议':
+            description_parts.append(f"回收建议：{normalized['recycling_value']}")
 
-        # 匹配层级分类
-        for main_category, sub_categories in hierarchical_categories.items():
-            for sub_category, keywords in sub_categories.items():
-                for keyword in keywords:
-                    if keyword in text_lower:
-                        specific_item = keyword  # 使用匹配的关键词作为具体物品名
-                        category = f"{main_category}-{sub_category}-{specific_item}"
-                        return {
-                            'category': category,
-                            'description': f'根据关键词"{keyword}"识别为{category}'
-                        }
+        normalized['description'] = "；".join(description_parts) if description_parts else '暂未提供详细的组成和回收信息'
+        return normalized
 
+    def _default_result(self) -> Dict[str, Any]:
+        """
+        当响应解析失败时提供的默认返回结构。
+        """
         return {
             'category': '其他垃圾-其他类-未知物品',
-            'description': '无法确定垃圾类型，请咨询工作人员'
+            'composition': '暂未获取到组成信息',
+            'degradation_time': '暂未获取到降解时间参考',
+            'recycling_value': '暂未获取到回收利用建议',
+            'description': '暂未提供详细的组成和回收信息'
         }
     
     def _simulate_recognition(self, image_path: str) -> Dict[str, Any]:
@@ -273,33 +264,46 @@ class APIClient:
         
         categories = [
             {
-                'category': '可回收物',
-                'confidence': 0.85,
-                'description': '检测到塑料瓶，请清洗后投放到蓝色可回收物垃圾桶'
+                'category': '可回收物-塑料类-矿泉水瓶',
+                'composition': '主要成分为聚对苯二甲酸乙二醇酯（PET）',
+                'degradation_time': '在自然环境中完全降解约需400-500年',
+                'recycling_value': '可循环再利用为再生塑料，建议清洗压扁后投入可回收物垃圾桶',
+                'description': '组成成分：聚对苯二甲酸乙二醇酯（PET）；降解时间：约400-500年；回收建议：清洗压扁后投入可回收物垃圾桶'
             },
             {
-                'category': '有害垃圾',
-                'confidence': 0.78,
-                'description': '检测到废电池，请投放到红色有害垃圾桶'
+                'category': '有害垃圾-电池类-废旧锂电池',
+                'composition': '含有锂、钴、镍等金属及有机电解液',
+                'degradation_time': '自然条件下难以降解，可在环境中残留数十年以上',
+                'recycling_value': '含稀贵金属，需交由专业机构回收处理，避免土壤与水体污染',
+                'description': '组成成分：锂、钴、镍等金属及有机电解液；降解时间：长期残留；回收建议：交由专业机构安全回收处理'
             },
             {
-                'category': '湿垃圾',
-                'confidence': 0.92,
-                'description': '检测到果皮，请投放到棕色湿垃圾桶'
+                'category': '厨余垃圾-果蔬类-苹果核',
+                'composition': '富含纤维素、半纤维素及少量果胶和水分',
+                'degradation_time': '在堆肥条件下约1-2个月即可降解',
+                'recycling_value': '可进行堆肥转化为有机肥，建议沥干水分后投入厨余垃圾桶',
+                'description': '组成成分：纤维素、半纤维素等；降解时间：约1-2个月；回收建议：沥干后投入厨余垃圾桶进行堆肥处理'
             },
             {
-                'category': '干垃圾',
-                'confidence': 0.73,
-                'description': '检测到纸巾，请投放到黑色干垃圾桶'
+                'category': '其他垃圾-织物类-一次性口罩',
+                'composition': '主要由聚丙烯无纺布、多层合成纤维',
+                'degradation_time': '自然降解可能需要25年以上',
+                'recycling_value': '不可回收，建议密封丢入其他垃圾桶，特殊时期应进行消毒处理',
+                'description': '组成成分：聚丙烯无纺布等；降解时间：约25年以上；回收建议：不可回收，密封投入其他垃圾桶'
             }
         ]
-        
+
         result = random.choice(categories)
         result['image_path'] = image_path
         result['timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         result['detection_method'] = 'API调用'
-        
-        self.logger.info(f"模拟识别结果: {result['category']} (置信度: {result['confidence']})")
+
+        self.logger.info(
+            "模拟识别结果: %s | 组成: %s | 降解: %s",
+            result['category'],
+            result['composition'],
+            result['degradation_time']
+        )
         return result
     
     def test_connection(self) -> bool:

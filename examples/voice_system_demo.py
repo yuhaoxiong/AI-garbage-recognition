@@ -68,7 +68,7 @@ def demo_basic_voice_functions():
     time.sleep(3)
     
     print("🔊 播放投放指导语音...")
-    voice_guide.speak_guidance("可回收物", 0.85)
+    voice_guide.speak_guidance("可回收物", guidance_text="请将可回收物投放到蓝色垃圾桶")
     time.sleep(3)
     
     print("🔊 播放感谢语音...")
@@ -293,7 +293,7 @@ def interactive_demo():
                     cat_index = int(cat_choice) - 1
                     if 0 <= cat_index < len(categories):
                         category = categories[cat_index]
-                        voice_guide.speak_guidance(category, 0.9)
+                        voice_guide.speak_guidance(category, guidance_text=f"请将{category}投放到对应垃圾桶")
                         print(f"🔊 正在播放{category}指导...")
                     else:
                         print("❌ 无效选择")

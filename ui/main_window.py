@@ -285,6 +285,11 @@ class MainWindow(QMainWindow):
         # 动画窗口
         self.animation_window = None
 
+        # 运动检测暂停控制
+        self._motion_detection_resume_timer = None
+        self._motion_detection_prev_enabled = False
+        self._motion_detection_resume_needed = False
+
         # 显示模式标志
         self.show_detection_result = False
 
@@ -900,9 +905,64 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.logger.error(f"设置动画窗口快捷键失败: {e}")
 
+    def _suspend_motion_detection(self, delay: float = 1.0, reason: str = ""):
+        """在界面快速切换时暂时关闭运动检测，避免误触发"""
+        if not self.motion_detection_worker:
+            return
+        try:
+            worker = self.motion_detection_worker
+            was_enabled = bool(getattr(worker, "is_enabled", False))
+            if not was_enabled:
+                self._motion_detection_prev_enabled = False
+                self._motion_detection_resume_needed = False
+                return
+
+            worker.enable_detection(False)
+            self._motion_detection_prev_enabled = True
+            self._motion_detection_resume_needed = True
+
+            if reason:
+                self.logger.debug(f"暂停运动检测: {reason}")
+
+            if self._motion_detection_resume_timer is None:
+                self._motion_detection_resume_timer = QTimer(self)
+                self._motion_detection_resume_timer.setSingleShot(True)
+                self._motion_detection_resume_timer.timeout.connect(self._resume_motion_detection)
+            else:
+                self._motion_detection_resume_timer.stop()
+
+            delay_ms = max(int(delay * 1000), 100)
+            self._motion_detection_resume_timer.start(delay_ms)
+
+        except Exception as e:
+            self.logger.warning(f"暂停运动检测失败: {e}")
+            self._motion_detection_prev_enabled = False
+            self._motion_detection_resume_needed = False
+
+    def _resume_motion_detection(self):
+        """界面切换结束后恢复运动检测"""
+        if not self.motion_detection_worker:
+            self._motion_detection_prev_enabled = False
+            self._motion_detection_resume_needed = False
+            return
+
+        if not self._motion_detection_prev_enabled or not self._motion_detection_resume_needed:
+            return
+
+        try:
+            self.motion_detection_worker.reset_background()
+            self.motion_detection_worker.enable_detection(True)
+            self.logger.debug("运动检测已恢复")
+        except Exception as e:
+            self.logger.warning(f"恢复运动检测失败: {e}")
+        finally:
+            self._motion_detection_prev_enabled = False
+            self._motion_detection_resume_needed = False
+
     def _toggle_animation_window(self):
         """切换动画窗口显示状态"""
         try:
+            self._suspend_motion_detection(1.0, 'animation_window_toggle')
             if self.animation_window:
                 self.animation_window.toggle_visibility()
                 status = "显示" if self.animation_window.isVisible() else "隐藏"
@@ -960,16 +1020,7 @@ class MainWindow(QMainWindow):
         """
         # 更新指导界面
         if GuidanceWidget and results:
-            # 取第一个检测结果进行显示
-            first_result = results[0]
-            result_dict = {
-                'category': first_result.waste_category,
-                'confidence': first_result.confidence,
-                'class_name': first_result.class_name,
-                'guidance': first_result.guidance,
-                'color': first_result.color
-            }
-            self.guidance_widget.update_detection_result(result_dict)
+            self.guidance_widget.update_detection_result(results)
         
         # 更新状态
         if results:
@@ -1026,9 +1077,17 @@ class MainWindow(QMainWindow):
             if state == 'no_motion':
                 # 如果有上一次的检测结果，显示它；否则显示等待状态
                 if self.last_detection_result and self.last_detection_result.get('category'):
-                    category = self.last_detection_result['category']
-                    confidence = self.last_detection_result.get('confidence', 0)
-                    self.update_motion_status(f"上次识别: {category} ({confidence:.1%})", "📋", "#6c757d")
+                    category_text = self.last_detection_result.get('category', '未知')
+                    specific_item = self.last_detection_result.get('specific_item')
+                    main_category = self.last_detection_result.get('main_category')
+                    if not main_category and isinstance(category_text, str) and '-' in category_text:
+                        main_category = category_text.split('-')[0]
+                    display_text = specific_item or category_text
+                    if display_text and main_category and display_text != main_category:
+                        status_text = f"上次识别: {display_text}（{main_category}）"
+                    else:
+                        status_text = f"上次识别: {display_text or '未知'}"
+                    self.update_motion_status(status_text, "📋", "#6c757d")
                 else:
                     self.update_motion_status("等待物体进入检测区域...", "🔍", "#6c757d")
             elif state == 'entering':
@@ -1093,56 +1152,67 @@ class MainWindow(QMainWindow):
         """处理API结果信号"""
         self.logger.info(f"收到API结果: {result}")
 
+        if not result:
+            self.update_motion_status("识别失败，请重试", "❌", "#dc3545")
+            self.last_detection_result = None
+            return
+
+        category_raw = result.get('category', '其他垃圾-其他类-未知物品')
+        category_parts = [part.strip() for part in str(category_raw).split('-') if part.strip()]
+        main_category = category_parts[0] if category_parts else '其他垃圾'
+        sub_category = category_parts[1] if len(category_parts) > 1 else '其他类'
+        specific_item = category_parts[2] if len(category_parts) > 2 else ''
+
+        composition = result.get('composition') or ''
+        degradation_time = result.get('degradation_time') or ''
+        recycling_value = result.get('recycling_value') or ''
+
+        # 构建统一描述文本，兼容旧组件
+        description_parts = []
+        if composition:
+            description_parts.append(f"组成成分：{composition}")
+        if degradation_time:
+            description_parts.append(f"降解时间：{degradation_time}")
+        if recycling_value:
+            description_parts.append(f"回收建议：{recycling_value}")
+        description_text = "\n".join(description_parts) if description_parts else "暂未提供详细的组成和处理信息。"
+
+        normalized_result = dict(result)
+        normalized_result['category'] = str(category_raw)
+        normalized_result['full_category'] = str(category_raw)
+        normalized_result['main_category'] = main_category
+        normalized_result['sub_category'] = sub_category
+        normalized_result['specific_item'] = specific_item
+        normalized_result['description'] = description_text
+        normalized_result['detection_method'] = 'API调用'
+
+        display_name = specific_item or main_category or category_raw
+
         # 更新运动状态显示 - 保持识别结果显示
-        if result and result.get('category'):
-            self.update_motion_status(f"识别完成: {result['category']}", "✅", "#28a745")
+        if normalized_result.get('category'):
+            self.update_motion_status(f"识别完成: {display_name}", "✅", "#28a745")
             # 保存最后的识别结果，用于在等待下次检测时显示
-            self.last_detection_result = result
+            self.last_detection_result = normalized_result
         else:
             self.update_motion_status("识别失败，请重试", "❌", "#dc3545")
             self.last_detection_result = None
 
         # 更新动态状态组件为识别成功状态
-        if self.dynamic_status_widget and result:
-            self.dynamic_status_widget.set_success_state(result)
+        if self.dynamic_status_widget:
+            self.dynamic_status_widget.set_success_state(normalized_result)
 
         # 更新动画窗口状态
-        if self.animation_window and result and result.get('category'):
-            category = result.get('category', '未知')
-            self.animation_window.set_result_state(category)
+        if self.animation_window and normalized_result.get('category'):
+            self.animation_window.set_result_state(normalized_result['category'])
 
         # 不再自动重置状态，让状态机控制状态显示
 
         # 在右侧检测结果区域显示API结果（备用指导界面）
-        if self.guidance_widget and result:
+        if self.guidance_widget:
             try:
-                # 解析层级分类格式
-                category = result.get('category', '其他垃圾-其他类-未知物品')
-                category_parts = category.split('-')
-                main_category = category_parts[0] if len(category_parts) > 0 else '其他垃圾'
-                sub_category = category_parts[1] if len(category_parts) > 1 else '其他类'
-                specific_item = category_parts[2] if len(category_parts) > 2 else '未知物品'
-
-                # 格式化API结果以便在UI中显示
-                api_result_dict = {
-                    'category': main_category,  # UI显示主分类
-                    'full_category': category,  # 完整层级分类
-                    'sub_category': sub_category,
-                    'specific_item': specific_item,
-                    'description': result.get('description', ''),
-                    'detection_method': 'API调用',
-                    'timestamp': result.get('timestamp', ''),
-                    'image_path': result.get('image_path', '')
-                }
-
-                # 更新指导界面显示API结果
-                self.guidance_widget.update_detection_result(api_result_dict)
-
-                # 更新状态栏
-                self.status_label.setText(f"API识别结果: {specific_item} ({main_category})")
-
-                self.logger.info(f"API结果已显示在检测结果区域: {category}")
-
+                self.guidance_widget.update_detection_result(normalized_result)
+                self.status_label.setText(f"API识别结果: {display_name}")
+                self.logger.info(f"API结果已显示在检测结果区域: {normalized_result['category']}")
             except Exception as e:
                 self.logger.error(f"显示API结果失败: {e}")
                 self.status_label.setText(f"API结果显示错误: {str(e)}")
@@ -1165,8 +1235,14 @@ class MainWindow(QMainWindow):
         # 播放语音指导（统一在这里处理，避免重复）
         if self.voice_manager:
             category = detection_result.get('category', '未知')
-            confidence = detection_result.get('confidence', 0)
-            self.voice_manager.handle_scene('recognition_success', category=category, confidence=confidence)
+            self.voice_manager.handle_scene(
+                'recognition_success',
+                category=category,
+                specific_item=detection_result.get('specific_item'),
+                composition=detection_result.get('composition'),
+                degradation_time=detection_result.get('degradation_time'),
+                recycling_value=detection_result.get('recycling_value')
+            )
     
     @Slot(str)
     def _on_motion_detection_error(self, error: str):
@@ -1581,12 +1657,14 @@ class MainWindow(QMainWindow):
         """键盘事件处理"""
         if event.key() == Qt.Key_F11:
             # F11切换全屏
+            self._suspend_motion_detection(1.0, 'fullscreen_toggle')
             if self.isFullScreen():
                 self.showNormal()
             else:
                 self.showFullScreen()
         elif event.key() == Qt.Key_Escape and self.isFullScreen():
             # ESC退出全屏
+            self._suspend_motion_detection(0.8, 'exit_fullscreen')
             self.showNormal()
         else:
             super().keyPressEvent(event)

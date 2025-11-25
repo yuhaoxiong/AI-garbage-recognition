@@ -422,13 +422,26 @@ class DynamicStatusWidget(QFrame):
         
         # 更新UI
         category = result.get('category', '其他垃圾-其他类-未知物品')
-        description = result.get('description', '无描述信息')
+        composition = result.get('composition')
+        degradation_time = result.get('degradation_time')
+        recycling_value = result.get('recycling_value')
+        description_lines = []
+        if composition:
+            description_lines.append(f"组成成分：{composition}")
+        if degradation_time:
+            description_lines.append(f"降解时间：{degradation_time}")
+        if result.get('description') and not description_lines:
+            description_lines.append(result.get('description'))
+        elif result.get('description'):
+            description_lines.append(result.get('description'))
+        description_text = "\n".join(description_lines) if description_lines else '暂无详细描述'
         
         # 获取分类信息
         category_info = self._get_category_info(category)
         icon = category_info.get('icon', '✅') if category_info else '✅'
         color = category_info.get('color', '#28a745') if category_info else '#28a745'
-        guidance = category_info.get('guidance', '请按照相关规定投放') if category_info else '请按照相关规定投放'
+        default_guidance = category_info.get('guidance', '请按照相关规定投放') if category_info else '请按照相关规定投放'
+        guidance_text = recycling_value or default_guidance
         
         self.animated_icon.set_icon(icon)
         self.animated_icon.stop_rotation()
@@ -453,10 +466,10 @@ class DynamicStatusWidget(QFrame):
         self.result_title.setText(display_title)
         self.result_title.setStyleSheet(f"color: {color}; padding: 10px;")
         
-        self.result_description.setText(description)
+        self.result_description.setText(description_text)
         self.result_description.setStyleSheet("color: #495057; padding: 8px;")
         
-        self.guidance_text.setText(f"投放指导：{guidance}")
+        self.guidance_text.setText(f"投放建议：{guidance_text}")
         self.guidance_text.setStyleSheet(f"color: {color}; background-color: rgba(255,255,255,0.8); padding: 12px; border-radius: 6px; border: 1px solid {color};")
         
         self.detail_frame.show()

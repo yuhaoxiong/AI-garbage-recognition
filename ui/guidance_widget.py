@@ -243,33 +243,35 @@ class DetectionResultWidget(QFrame):
         category_label.setFont(QFont("Microsoft YaHei", 14, QFont.Bold))
         category_label.setStyleSheet(f"color: {result.color};")
         
-        # 置信度
-        confidence_label = QLabel(f"{result.confidence:.1%}")
-        confidence_label.setFont(QFont("Microsoft YaHei", 10))
-        confidence_label.setStyleSheet("color: #7f8c8d;")
-        
         title_layout.addWidget(index_label)
         title_layout.addWidget(category_label)
         title_layout.addStretch()
-        title_layout.addWidget(confidence_label)
-        
-        # 置信度进度条
-        confidence_bar = QProgressBar()
-        confidence_bar.setRange(0, 100)
-        confidence_bar.setValue(int(result.confidence * 100))
-        confidence_bar.setFixedHeight(8)
-        confidence_bar.setStyleSheet(f"""
-            QProgressBar {{
-                border: 1px solid #bdc3c7;
-                border-radius: 4px;
-                background-color: #ecf0f1;
-            }}
-            QProgressBar::chunk {{
-                background-color: {result.color};
-                border-radius: 3px;
-            }}
-        """)
-        
+        # 置信度展示（若存在）
+        confidence_value = getattr(result, 'confidence', None)
+        confidence_bar = None
+        if confidence_value is not None:
+            confidence_value = max(0.0, min(1.0, confidence_value))
+            confidence_label = QLabel(f"{confidence_value:.1%}")
+            confidence_label.setFont(QFont("Microsoft YaHei", 10))
+            confidence_label.setStyleSheet("color: #7f8c8d;")
+            title_layout.addWidget(confidence_label)
+
+            confidence_bar = QProgressBar()
+            confidence_bar.setRange(0, 100)
+            confidence_bar.setValue(int(confidence_value * 100))
+            confidence_bar.setFixedHeight(8)
+            confidence_bar.setStyleSheet(f"""
+                QProgressBar {{
+                    border: 1px solid #bdc3c7;
+                    border-radius: 4px;
+                    background-color: #ecf0f1;
+                }}
+                QProgressBar::chunk {{
+                    background-color: {result.color};
+                    border-radius: 3px;
+                }}
+            """)
+
         # 指导文本
         guidance_label = QLabel(result.guidance)
         guidance_label.setFont(QFont("Microsoft YaHei", 11))
@@ -298,6 +300,15 @@ class DetectionResultWidget(QFrame):
             """)
             extra_info_layout.addWidget(method_label)
 
+            # 分类层级信息
+            category_text = getattr(result, 'waste_category', '')
+            if category_text:
+                category_label = QLabel(f"📂 分类层级: {category_text}")
+                category_label.setFont(QFont("Microsoft YaHei", 9))
+                category_label.setStyleSheet("color: #2c3e50; padding: 2px;")
+                category_label.setWordWrap(True)
+                extra_info_layout.addWidget(category_label)
+
             # 时间戳信息
             if hasattr(result, 'timestamp') and result.timestamp:
                 timestamp_label = QLabel(f"⏰ 识别时间: {result.timestamp}")
@@ -314,8 +325,23 @@ class DetectionResultWidget(QFrame):
                 image_label.setStyleSheet("color: #7f8c8d; padding: 2px;")
                 extra_info_layout.addWidget(image_label)
 
+            # 垃圾组成与处理信息
+            info_items = [
+                ("🧪 组成成分", getattr(result, 'composition', None)),
+                ("⏳ 降解时间", getattr(result, 'degradation_time', None)),
+                ("♻️ 回收价值", getattr(result, 'recycling_value', None)),
+            ]
+            for icon_text, value in info_items:
+                if value:
+                    info_label = QLabel(f"{icon_text}: {value}")
+                    info_label.setFont(QFont("Microsoft YaHei", 9))
+                    info_label.setStyleSheet("color: #34495e; padding: 2px;")
+                    info_label.setWordWrap(True)
+                    extra_info_layout.addWidget(info_label)
+
         item_layout.addLayout(title_layout)
-        item_layout.addWidget(confidence_bar)
+        if confidence_bar is not None:
+            item_layout.addWidget(confidence_bar)
         item_layout.addWidget(guidance_label)
 
         # 添加额外信息（如果有）
@@ -508,65 +534,28 @@ class GuidanceWidget(QWidget):
         try:
             # 处理不同格式的检测结果
             if isinstance(result, dict):
-                # API调用结果格式
-                if 'detection_method' in result and result['detection_method'] == 'API调用':
-                    category = result.get('category', '未知')
-                    confidence = result.get('confidence', 0.0)
-                    description = result.get('description', '')
-                    image_path = result.get('image_path', '')
-                    timestamp = result.get('timestamp', '')
-
-                    # 创建API检测结果对象
-                    api_detection_result = WasteDetectionResult(
-                        class_name=f"api_{category.lower()}",
-                        waste_category=category,
-                        confidence=confidence,
-                        bbox=[0, 0, 100, 100],  # API检测没有具体边界框
-                        guidance=f"API识别结果: {description}",
-                        color=self._get_category_color(category)
-                    )
-
-                    # 添加额外信息
-                    api_detection_result.detection_method = 'API调用'
-                    api_detection_result.timestamp = timestamp
-                    api_detection_result.image_path = image_path
-
-                    # 更新显示
+                detection_method = result.get('detection_method')
+                if detection_method == 'API调用':
+                    api_detection_result = self._create_api_detection_result(result, 'API调用')
                     self._update_result_display([api_detection_result])
 
-                    # 显示API调用信息
-                    if image_path:
-                        self.logger.info(f"API识别图片: {image_path}")
-                    if timestamp:
-                        self.logger.info(f"API识别时间: {timestamp}")
+                    if api_detection_result.image_path:
+                        self.logger.info(f"API识别图片: {api_detection_result.image_path}")
+                    if hasattr(api_detection_result, 'timestamp') and api_detection_result.timestamp:
+                        self.logger.info(f"API识别时间: {api_detection_result.timestamp}")
 
                 # 运动检测结果格式
-                elif 'detection_method' in result and result['detection_method'] == 'motion_detection':
-                    category = result.get('category', '未知')
-                    confidence = result.get('confidence', 0.0)
-                    description = result.get('description', '')
-                    image_path = result.get('image_path', '')
+                elif detection_method == 'motion_detection':
+                    motion_detection_result = self._create_api_detection_result(result, 'motion_detection')
+                    self._update_result_display([motion_detection_result])
 
-                    # 创建检测结果对象
-                    detection_result = WasteDetectionResult(
-                        class_name=f"motion_{category.lower()}",
-                        waste_category=category,
-                        confidence=confidence,
-                        bbox=[0, 0, 100, 100],  # 运动检测没有具体边界框
-                        guidance=f"运动检测结果: {description}",
-                        color=self._get_category_color(category)
-                    )
-
-                    # 更新显示
-                    self._update_result_display([detection_result])
-
-                    # 显示捕获的图片路径
-                    if image_path:
-                        self.logger.info(f"运动检测图片: {image_path}")
+                    if motion_detection_result.image_path:
+                        self.logger.info(f"运动检测图片: {motion_detection_result.image_path}")
 
                 else:
-                    # RKNN检测结果格式
-                    self._update_result_display(result)
+                    # 通用或RKNN检测结果
+                    generic_result = self._create_generic_detection_result(result)
+                    self._update_result_display([generic_result])
             else:
                 # 直接传递结果列表
                 self._update_result_display(result)
@@ -579,11 +568,104 @@ class GuidanceWidget(QWidget):
         color_map = {
             '可回收物': '#0080ff',
             '有害垃圾': '#ff4444',
+            '厨余垃圾': '#00cc66',
             '湿垃圾': '#00cc66',
             '干垃圾': '#888888',
+            '其他垃圾': '#9b59b6',
             '未知': '#cccccc'
         }
         return color_map.get(category, '#cccccc')
+
+    def _create_api_detection_result(self, result: Dict[str, Any], method: str) -> WasteDetectionResult:
+        """根据API返回数据构建检测结果对象"""
+        full_category = result.get('full_category') or result.get('category', '其他垃圾-其他类-未知物品')
+        category_parts = [part.strip() for part in full_category.split('-') if part.strip()]
+        main_category = category_parts[0] if category_parts else '其他垃圾'
+        sub_category = category_parts[1] if len(category_parts) > 1 else '其他类'
+        specific_item = category_parts[2] if len(category_parts) > 2 else ''
+
+        composition = result.get('composition') or ''
+        degradation_time = result.get('degradation_time') or ''
+        recycling_value = result.get('recycling_value') or ''
+
+        guidance_sections = []
+        if composition:
+            guidance_sections.append(f"组成成分：{composition}")
+        if degradation_time:
+            guidance_sections.append(f"降解时间：{degradation_time}")
+        if recycling_value:
+            guidance_sections.append(f"回收建议：{recycling_value}")
+        guidance_text = "\n".join(guidance_sections) if guidance_sections else "未提供详细的组成和处理信息，请咨询工作人员。"
+
+        class_suffix = specific_item or sub_category or main_category
+        detection_result = WasteDetectionResult(
+            class_name=f"{method}_{class_suffix}".lower(),
+            waste_category=full_category,
+            bbox=(0, 0, 0, 0),
+            guidance=guidance_text,
+            color=self._get_category_color(main_category),
+            composition=composition or None,
+            degradation_time=degradation_time or None,
+            recycling_value=recycling_value or None
+        )
+
+        detection_result.detection_method = method
+        detection_result.timestamp = result.get('timestamp', '')
+        detection_result.image_path = result.get('image_path', '')
+        detection_result.main_category = main_category
+        detection_result.sub_category = sub_category
+        detection_result.specific_item = specific_item
+
+        # 运动检测特有信息
+        if method == 'motion_detection':
+            detection_result.motion_state = result.get('motion_state')
+            detection_result.stability_duration = result.get('stability_duration')
+
+        return detection_result
+
+    def _normalize_bbox(self, bbox_value: Any) -> tuple:
+        """将任意形式的bbox转换为标准四元组"""
+        if isinstance(bbox_value, (list, tuple)) and len(bbox_value) == 4:
+            try:
+                return tuple(int(v) for v in bbox_value)
+            except (TypeError, ValueError):
+                pass
+        return (0, 0, 0, 0)
+
+    def _create_generic_detection_result(self, data: Dict[str, Any]) -> WasteDetectionResult:
+        """将通用字典数据转换为检测结果对象"""
+        category_raw = data.get('full_category') or data.get('category') or '未知'
+        category_str = str(category_raw)
+        category_parts = [part.strip() for part in category_str.split('-') if part.strip()]
+        main_category = category_parts[0] if category_parts else category_str
+
+        confidence = data.get('confidence')
+        if isinstance(confidence, (int, float)):
+            confidence_value = float(confidence)
+        else:
+            confidence_value = None
+
+        guidance_text = data.get('guidance') or data.get('description') or data.get('recycling_value') \
+            or "暂未提供详细指导信息，请咨询工作人员。"
+
+        detection_result = WasteDetectionResult(
+            class_name=str(data.get('class_name', 'generic_result')),
+            waste_category=category_str,
+            bbox=self._normalize_bbox(data.get('bbox', (0, 0, 0, 0))),
+            guidance=guidance_text,
+            color=self._get_category_color(main_category),
+            confidence=confidence_value,
+            composition=data.get('composition'),
+            degradation_time=data.get('degradation_time'),
+            recycling_value=data.get('recycling_value')
+        )
+
+        # 附加常用属性
+        for key in ['detection_method', 'timestamp', 'image_path']:
+            if key in data:
+                setattr(detection_result, key, data[key])
+
+        return detection_result
     
     def _update_result_display(self, results):
         """更新结果显示"""
@@ -601,11 +683,26 @@ class GuidanceWidget(QWidget):
         """播放检测指导语音"""
         if len(results) == 1:
             result = results[0]
-            self.voice_guide.speak_guidance(result.waste_category, result.guidance)
+            self.voice_guide.speak_guidance(
+                result.waste_category,
+                guidance_text=result.guidance,
+                specific_item=getattr(result, 'specific_item', None),
+                composition=getattr(result, 'composition', None),
+                degradation_time=getattr(result, 'degradation_time', None),
+                recycling_value=getattr(result, 'recycling_value', None)
+            )
         elif len(results) > 1:
             self.voice_guide.speak_multiple_items(len(results))
             # 播放第一个结果的指导
-            self.voice_guide.speak_guidance(results[0].waste_category, results[0].guidance)
+            first_result = results[0]
+            self.voice_guide.speak_guidance(
+                first_result.waste_category,
+                guidance_text=first_result.guidance,
+                specific_item=getattr(first_result, 'specific_item', None),
+                composition=getattr(first_result, 'composition', None),
+                degradation_time=getattr(first_result, 'degradation_time', None),
+                recycling_value=getattr(first_result, 'recycling_value', None)
+            )
     
     def _clear_guidance(self):
         """清除指导显示"""

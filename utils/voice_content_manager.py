@@ -281,29 +281,45 @@ class VoiceContentManager:
             self.logger.error(f"应用个性化设置失败: {e}")
             return text
     
-    def get_guidance_text(self, category: str, confidence: float = None) -> str:
+    def get_guidance_text(
+        self,
+        category: str,
+        specific_item: Optional[str] = None,
+        composition: Optional[str] = None,
+        degradation_time: Optional[str] = None,
+        recycling_value: Optional[str] = None
+    ) -> str:
         """获取投放指导文本"""
         try:
-            category_info = self.waste_categories.get(category, {})
+            category_key = category.split('-')[0] if '-' in category else category
+            category_info = self.waste_categories.get(category_key, {})
             bin_color = category_info.get('bin_color', '对应')
             
             # 构建基础指导文本
             kwargs = {
-                'category': category,
+                'category': category_key,
                 'bin_color': bin_color
             }
-            
-            # 添加置信度信息
-            if confidence is not None and confidence < 0.8:
-                confidence_text = f"识别置信度为{confidence:.0%}，"
-                base_text = self.get_voice_text(VoiceContext.GUIDANCE, **kwargs)
-                return f"{confidence_text}{base_text}"
-            
-            return self.get_voice_text(VoiceContext.GUIDANCE, **kwargs)
+
+            base_text = self.get_voice_text(VoiceContext.GUIDANCE, **kwargs)
+
+            detail_sentences: List[str] = []
+            if specific_item:
+                detail_sentences.append(f"检测物品为{specific_item}。")
+            if composition:
+                detail_sentences.append(f"主要成分包括{composition}。")
+            if degradation_time:
+                detail_sentences.append(f"在自然环境中大约需要{degradation_time}才能降解。")
+            if recycling_value:
+                detail_sentences.append(f"回收与处理建议：{recycling_value}。")
+
+            detail_sentences.append(base_text)
+
+            return " ".join(detail_sentences)
             
         except Exception as e:
             self.logger.error(f"获取指导文本失败: {e}")
-            return f"请将{category}投放到对应垃圾桶"
+            return f"请将{category_key}投放到对应垃圾桶"
     
     def set_language(self, language: str):
         """设置语言"""

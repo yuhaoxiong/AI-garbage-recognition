@@ -67,7 +67,7 @@
     "enable_voice": true,
     "voice_language": "zh",
     "volume": 0.8,
-    "speech_rate": 150
+    "speech_rate": 200
   },
   "llm": {
     "api_url": "",

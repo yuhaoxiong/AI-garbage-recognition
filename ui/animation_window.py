@@ -119,9 +119,9 @@ class AnimationWindow(QWidget):
         """)
         self.info_label.hide()  # 默认隐藏
 
-        # 添加到布局（动画区域占据大部分空间）
+        # 添加到布局（文字信息置顶，动画区域占据剩余空间）
+        main_layout.addWidget(self.info_label, 0, Qt.AlignHCenter)  # 顶部居中显示提示
         main_layout.addWidget(self.animation_label, 1)  # 拉伸因子为1
-        main_layout.addWidget(self.info_label, 0)       # 固定大小
         
         # 设置窗口标题（虽然不显示，但便于调试）
         self.setWindowTitle("垃圾分类动画指导")

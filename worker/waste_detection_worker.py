@@ -29,10 +29,13 @@ class WasteDetectionResult:
     """废弃物检测结果"""
     class_name: str          # AI识别的类别名
     waste_category: str      # 垃圾分类
-    confidence: float        # 置信度
     bbox: Tuple[int, int, int, int]  # 边界框 (x1, y1, x2, y2)
-    guidance: str           # 投放指导
-    color: str             # 分类颜色
+    guidance: str            # 投放指导
+    color: str               # 分类颜色
+    confidence: Optional[float] = None        # 置信度（可选）
+    composition: Optional[str] = None         # 垃圾组成（可选）
+    degradation_time: Optional[str] = None    # 降解时间（可选）
+    recycling_value: Optional[str] = None     # 回收价值（可选）
 
 
 class WasteDetector:
@@ -211,10 +214,10 @@ class WasteDetector:
                     result = WasteDetectionResult(
                         class_name=class_name,
                         waste_category=waste_category,
-                        confidence=float(class_confidence),
                         bbox=(x1, y1, x2, y2),
                         guidance=guidance,
-                        color=color
+                        color=color,
+                        confidence=float(class_confidence)
                     )
                     
                     results.append(result)
@@ -241,7 +244,7 @@ class WasteDetector:
             return results
         
         # 按置信度排序
-        results.sort(key=lambda x: x.confidence, reverse=True)
+        results.sort(key=lambda x: x.confidence or 0.0, reverse=True)
         
         # 简单的NMS实现
         filtered_results = []
@@ -304,10 +307,10 @@ class WasteDetector:
             WasteDetectionResult(
                 class_name="plastic_bottle",
                 waste_category="可回收物",
-                confidence=0.85,
                 bbox=(100, 100, 200, 300),
                 guidance="请清洗干净后投放到蓝色可回收物垃圾桶",
-                color="#0080ff"
+                color="#0080ff",
+                confidence=0.85
             )
         ]
         
@@ -351,6 +354,7 @@ class WasteDetectionWorker(QThread):
         # 摄像头和检测器
         self.cap = None
         self.detector = WasteDetector()
+        self.current_frame = None
         
         # FPS计算
         self.fps_counter = 0
@@ -394,7 +398,9 @@ class WasteDetectionWorker(QThread):
     
     def get_current_frame(self) -> Optional[np.ndarray]:
         """获取当前帧"""
-        return self.current_frame if hasattr(self, 'current_frame') else None
+        with QMutexLocker(self.mutex):
+            frame = self.current_frame
+        return frame.copy() if frame is not None else None
     
     def enable_io_detection(self, enabled: bool):
         """启用/禁用IO控制检测"""
@@ -429,7 +435,10 @@ class WasteDetectionWorker(QThread):
                 if not ret:
                     self.error_occurred.emit("读取摄像头帧失败")
                     break
-                
+
+                with QMutexLocker(self.mutex):
+                    self.current_frame = frame.copy()
+
                 # 检测废弃物（仅在IO控制开启时进行）
                 detection_results = []
                 if self.io_detection_enabled:
@@ -504,7 +513,11 @@ class WasteDetectionWorker(QThread):
             cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), color_bgr, 2)
             
             # 绘制标签
-            label = f"{result.waste_category} ({result.confidence:.2f})"
+            if result.confidence is not None:
+                confidence_text = f"{result.confidence:.2f}"
+            else:
+                confidence_text = "--"
+            label = f"{result.waste_category} ({confidence_text})"
             label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)[0]
             
             # 绘制标签背景
@@ -535,8 +548,11 @@ class WasteDetectionWorker(QThread):
     def _cleanup(self):
         """清理资源"""
         if self.cap is not None:
-            self.cap.release()
-            self.cap = None 
+            if self.cap.isOpened():
+                self.cap.release()
+            self.cap = None
+        with QMutexLocker(self.mutex):
+            self.current_frame = None
 
     def stop(self):
         """安全停止线程"""

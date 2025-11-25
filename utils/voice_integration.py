@@ -9,6 +9,7 @@ import logging
 from typing import Optional, Dict, Any, Callable
 from utils.enhanced_voice_guide import get_enhanced_voice_guide, VoicePriority, VoiceStyle
 from utils.voice_content_manager import VoiceContext
+from utils.config_manager import get_config_manager
 
 
 class VoiceGuideCompat:
@@ -17,9 +18,12 @@ class VoiceGuideCompat:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.enhanced_guide = get_enhanced_voice_guide()
+        self.config_manager = get_config_manager()
         
         # 兼容性标志
         self.enabled = self.enhanced_guide.enabled
+        self._last_volume = getattr(self.enhanced_guide, "volume", 0.8)
+        self._last_rate = getattr(self.enhanced_guide, "rate", 150)
         
         # 连接增强语音的信号到兼容回调
         if hasattr(self.enhanced_guide, 'monitor'):
@@ -43,12 +47,43 @@ class VoiceGuideCompat:
     def _on_task_failed(self, task_info: Dict[str, Any], error: str):
         """任务失败回调"""
         self.logger.error(f"语音任务失败: {error}")
-    
+
     # === 原有接口兼容方法 ===
+
+    def _refresh_audio_settings(self):
+        """从配置中心刷新语音播放参数"""
+        try:
+            audio_config = self.config_manager.get_audio_config()
+        except Exception as e:
+            self.logger.debug(f"获取音频配置失败，保持现状: {e}")
+            return
+
+        if audio_config.enable_voice != self.enabled:
+            self.enabled = audio_config.enable_voice
+            self.enhanced_guide.enabled = self.enabled
+
+        volume = audio_config.volume
+        rate = audio_config.speech_rate
+
+        volume_changed = abs(volume - self._last_volume) > 1e-3
+        rate_changed = rate != self._last_rate
+
+        if volume_changed or rate_changed:
+            self.enhanced_guide.update_audio_settings(
+                volume=volume if volume_changed else None,
+                speech_rate=rate if rate_changed else None
+            )
+            self._last_volume = volume
+            self._last_rate = rate
     
     def speak(self, text: str, priority: str = "normal", callback: Optional[Callable] = None, source: str = "VoiceGuideCompat"):
         """播放语音 - 兼容原有接口"""
         try:
+            self._refresh_audio_settings()
+            if not self.enabled:
+                self.logger.debug("语音功能已禁用，跳过播放请求")
+                return
+
             # 转换优先级
             voice_priority = self._convert_priority(priority)
             
@@ -61,10 +96,30 @@ class VoiceGuideCompat:
         except Exception as e:
             self.logger.error(f"语音播放失败: {e}")
     
-    def speak_guidance(self, waste_category: str, confidence: float = None, guidance_text: str = None):
+    def speak_guidance(
+        self,
+        waste_category: str,
+        specific_item: str = None,
+        composition: str = None,
+        degradation_time: str = None,
+        recycling_value: str = None,
+        guidance_text: str = None
+    ):
         """播放投放指导 - 兼容原有接口"""
         try:
-            self.enhanced_guide.speak_guidance(waste_category, confidence=confidence, guidance_text=guidance_text)
+            self._refresh_audio_settings()
+            if not self.enabled:
+                self.logger.debug("语音功能已禁用，跳过投放指导播放")
+                return
+
+            self.enhanced_guide.speak_guidance(
+                waste_category,
+                specific_item=specific_item,
+                composition=composition,
+                degradation_time=degradation_time,
+                recycling_value=recycling_value,
+                guidance_text=guidance_text
+            )
         except Exception as e:
             self.logger.error(f"指导语音播放失败: {e}")
     
@@ -101,34 +156,66 @@ class VoiceGuideCompat:
     
     def speak_welcome(self):
         """播放欢迎语音"""
+        self._refresh_audio_settings()
+        if not self.enabled:
+            self.logger.debug("语音功能已禁用，跳过欢迎语音")
+            return
         self.enhanced_guide.speak_welcome()
-    
+
     def speak_detection_start(self):
         """播放检测开始语音"""
+        self._refresh_audio_settings()
+        if not self.enabled:
+            self.logger.debug("语音功能已禁用，跳过检测开始语音")
+            return
         self.enhanced_guide.speak_detection_start()
-    
+
     def speak_detection_progress(self):
         """播放检测进行中语音"""
+        self._refresh_audio_settings()
+        if not self.enabled:
+            self.logger.debug("语音功能已禁用，跳过检测进度语音")
+            return
         self.enhanced_guide.speak_detection_progress()
-    
-    def speak_detection_success(self, category: str, confidence: float = None):
+
+    def speak_detection_success(self, category: str, specific_item: str = None):
         """播放检测成功语音"""
-        self.enhanced_guide.speak_detection_success(category, confidence)
-    
+        self._refresh_audio_settings()
+        if not self.enabled:
+            self.logger.debug("语音功能已禁用，跳过检测成功语音")
+            return
+        self.enhanced_guide.speak_detection_success(category, specific_item=specific_item)
+
     def speak_detection_failed(self):
         """播放检测失败语音"""
+        self._refresh_audio_settings()
+        if not self.enabled:
+            self.logger.debug("语音功能已禁用，跳过检测失败语音")
+            return
         self.enhanced_guide.speak_detection_failed()
-    
+
     def speak_thank_you(self):
         """播放感谢语音"""
+        self._refresh_audio_settings()
+        if not self.enabled:
+            self.logger.debug("语音功能已禁用，跳过感谢语音")
+            return
         self.enhanced_guide.speak_thank_you()
-    
+
     def speak_error(self, error_message: str = None):
         """播放错误语音"""
+        self._refresh_audio_settings()
+        if not self.enabled:
+            self.logger.debug("语音功能已禁用，跳过错误提示语音")
+            return
         self.enhanced_guide.speak_error(error_message)
-    
+
     def speak_urgent(self, text: str):
         """播放紧急语音"""
+        self._refresh_audio_settings()
+        if not self.enabled:
+            self.logger.debug("语音功能已禁用，跳过紧急语音")
+            return
         self.enhanced_guide.speak_urgent(text)
     
     def set_voice_style(self, style: str):
@@ -219,16 +306,30 @@ class VoiceIntegrationManager:
         """图片已捕获"""
         self.voice_guide.speak_detection_progress()
     
-    def _on_recognition_success(self, category: str = None, confidence: float = None, **kwargs):
+    def _on_recognition_success(
+        self,
+        category: str = None,
+        specific_item: str = None,
+        composition: str = None,
+        degradation_time: str = None,
+        recycling_value: str = None,
+        **kwargs
+    ):
         """识别成功"""
         if category:
-            self.voice_guide.speak_detection_success(category, confidence)
+            self.voice_guide.speak_detection_success(category, specific_item=specific_item)
             # 延迟播放指导语音
             import threading
             def delayed_guidance():
                 import time
                 time.sleep(1.5)  # 等待1.5秒，确保前一个语音播放完成
-                self.voice_guide.speak_guidance(category, confidence=confidence)
+                self.voice_guide.speak_guidance(
+                    category,
+                    specific_item=specific_item,
+                    composition=composition,
+                    degradation_time=degradation_time,
+                    recycling_value=recycling_value
+                )
             
             threading.Thread(target=delayed_guidance, daemon=True).start()
     

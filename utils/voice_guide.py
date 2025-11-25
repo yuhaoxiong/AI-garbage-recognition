@@ -219,7 +219,7 @@ class VoiceGuide:
             if "run loop already started" not in str(e):
                 self._reinit_tts_engine()
     
-    def speak_guidance(self, waste_category: str, guidance_text: str = None):
+    def speak_guidance(self, waste_category: str, guidance_text: str = None, **kwargs):
         """
         播放垃圾投放指导语音
         
@@ -227,6 +227,11 @@ class VoiceGuide:
             waste_category: 垃圾分类
             guidance_text: 自定义指导文本
         """
+        specific_item = kwargs.get('specific_item')
+        composition = kwargs.get('composition')
+        degradation_time = kwargs.get('degradation_time')
+        recycling_value = kwargs.get('recycling_value')
+
         if guidance_text:
             text = guidance_text
         else:
@@ -238,7 +243,19 @@ class VoiceGuide:
                 text = f'检测到{waste_category}，请咨询工作人员投放方式'
         
         # 添加前缀提示
-        full_text = f"检测到{waste_category}。{text}"
+        subject = specific_item or waste_category
+        detail_parts = []
+        if composition:
+            detail_parts.append(f"主要成分包括{composition}")
+        if degradation_time:
+            detail_parts.append(f"自然降解约需{degradation_time}")
+        if recycling_value and not guidance_text:
+            detail_parts.append(recycling_value)
+        detail_text = "。".join(detail_parts)
+        if detail_text:
+            full_text = f"检测到{subject}。{text}。{detail_text}"
+        else:
+            full_text = f"检测到{subject}。{text}"
         
         self.speak(full_text)
     

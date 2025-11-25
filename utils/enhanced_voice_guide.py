@@ -316,9 +316,11 @@ class SAPIEngine(BaseVoiceEngine):
             self.sapi = win32com.client.Dispatch("SAPI.SpVoice")
             
             # 设置语速和音量
-            self.sapi.Rate = self.config.get('speech_rate', 0)  # SAPI使用-10到10的范围
+            speech_rate = self.config.get('speech_rate', 150)
+            self.sapi.Rate = self._convert_rate(speech_rate)  # SAPI使用-10到10的范围
             self.sapi.Volume = int(self.config.get('volume', 0.8) * 100)  # SAPI使用0-100
-            
+            self.config['speech_rate'] = speech_rate
+
             self.is_available = True
             self.is_initialized = True
             self.logger.info("SAPI引擎初始化成功")
@@ -393,15 +395,27 @@ class SAPIEngine(BaseVoiceEngine):
         try:
             if not self.sapi:
                 return
-            
+
             if name == 'rate':
                 # 转换为SAPI范围
-                self.sapi.Rate = max(-10, min(10, int((value - 150) / 15)))
+                self.sapi.Rate = self._convert_rate(value)
+                self.config['speech_rate'] = value
             elif name == 'volume':
                 self.sapi.Volume = int(max(0, min(1, value)) * 100)
-                
+                self.config['volume'] = value
+
         except Exception as e:
             self.logger.error(f"设置SAPI属性失败: {e}")
+
+    @staticmethod
+    def _convert_rate(value: Any) -> int:
+        """将通用语速（约50-300）映射到SAPI的-10~10范围"""
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            numeric = 150
+        normalized = int(round((numeric - 150) / 15))
+        return max(-10, min(10, normalized))
     
     def get_voices(self) -> List[Dict[str, Any]]:
         """获取可用声音"""
@@ -873,6 +887,7 @@ class EnhancedVoiceGuide(QObject):
             except Exception:
                 pass
             pygame.mixer.music.play(fade_ms=50)
+            
 
             # 等待播放完成
             while pygame.mixer.music.get_busy():
@@ -926,16 +941,39 @@ class EnhancedVoiceGuide(QObject):
         """播放紧急语音（最高优先级）"""
         self.speak(text, VoicePriority.URGENT, callback)
 
-    def speak_guidance(self, waste_category: str, confidence: float = None,
-                      guidance_text: str = None, priority: VoicePriority = VoicePriority.HIGH):
+    def speak_guidance(
+        self,
+        waste_category: str,
+        specific_item: Optional[str] = None,
+        composition: Optional[str] = None,
+        degradation_time: Optional[str] = None,
+        recycling_value: Optional[str] = None,
+        guidance_text: str = None,
+        priority: VoicePriority = VoicePriority.HIGH
+    ):
         """播放垃圾投放指导语音"""
         if guidance_text:
             text = guidance_text
         else:
             # 使用内容管理器获取指导文本
-            text = self.content_manager.get_guidance_text(waste_category, confidence)
+            text = self.content_manager.get_guidance_text(
+                waste_category,
+                specific_item=specific_item,
+                composition=composition,
+                degradation_time=degradation_time,
+                recycling_value=recycling_value
+            )
 
-        self.speak(text, priority, metadata={'type': 'guidance', 'category': waste_category, 'confidence': confidence})
+        metadata = {
+            'type': 'guidance',
+            'category': waste_category,
+            'specific_item': specific_item,
+            'composition': composition,
+            'degradation_time': degradation_time,
+            'recycling_value': recycling_value
+        }
+
+        self.speak(text, priority, metadata=metadata)
 
     def speak_welcome(self, priority: VoicePriority = VoicePriority.NORMAL):
         """播放欢迎语音"""
@@ -952,11 +990,25 @@ class EnhancedVoiceGuide(QObject):
         text = self.content_manager.get_voice_text(VoiceContext.DETECTION_PROGRESS)
         self.speak(text, priority, metadata={'type': 'detection_progress'})
 
-    def speak_detection_success(self, category: str, confidence: float = None,
-                               priority: VoicePriority = VoicePriority.HIGH):
+    def speak_detection_success(
+        self,
+        category: str,
+        specific_item: Optional[str] = None,
+        priority: VoicePriority = VoicePriority.HIGH
+    ):
         """播放检测成功语音"""
-        text = self.content_manager.get_voice_text(VoiceContext.DETECTION_SUCCESS, category=category)
-        self.speak(text, priority, metadata={'type': 'detection_success', 'category': category, 'confidence': confidence})
+        main_category = category.split('-')[0] if '-' in category else category
+        if specific_item:
+            text = f"识别成功，检测到{specific_item}，属于{main_category}。"
+        else:
+            text = f"识别成功，检测到{main_category}。"
+
+        metadata = {
+            'type': 'detection_success',
+            'category': category,
+            'specific_item': specific_item
+        }
+        self.speak(text, priority, metadata=metadata)
 
     def speak_detection_failed(self, priority: VoicePriority = VoicePriority.HIGH):
         """播放检测失败语音"""
@@ -985,6 +1037,39 @@ class EnhancedVoiceGuide(QObject):
         """设置语音语言"""
         self.content_manager.set_language(language)
         self.logger.info(f"语音语言已设置为: {language}")
+
+    def update_audio_settings(self, volume: Optional[float] = None, speech_rate: Optional[int] = None):
+        """更新音频播放的音量与语速"""
+        try:
+            volume_changed = volume is not None and abs(volume - self.volume) > 1e-3
+            rate_changed = speech_rate is not None and speech_rate != self.rate
+
+            if not (volume_changed or rate_changed):
+                return
+
+            if volume is not None:
+                self.volume = max(0.0, min(1.0, float(volume)))
+            if speech_rate is not None:
+                self.rate = int(speech_rate)
+
+            for engine in self.engines.values():
+                if not engine or not getattr(engine, "is_initialized", False):
+                    continue
+                if volume is not None:
+                    engine.config["volume"] = self.volume
+                    try:
+                        engine.set_property("volume", self.volume)
+                    except Exception as e:
+                        self.logger.debug(f"更新引擎音量失败: {e}")
+                if speech_rate is not None:
+                    engine.config["speech_rate"] = self.rate
+                    try:
+                        engine.set_property("rate", self.rate)
+                    except Exception as e:
+                        self.logger.debug(f"更新引擎语速失败: {e}")
+
+        except Exception as e:
+            self.logger.error(f"更新语音设置失败: {e}")
 
     def update_voice_preferences(self, preferences: Dict[str, Any]):
         """更新语音个性化偏好"""
