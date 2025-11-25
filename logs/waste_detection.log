@@ -17186,3 +17186,340 @@ AttributeError: 'MainWindow' object has no attribute 'animation_window'. Did you
 2025-11-25 14:18:31,808 - utils.enhanced_voice_guide - INFO - 语音系统资源已清理
 2025-11-25 14:18:31,808 - ui.main_window - INFO - 应用程序正常关闭
 2025-11-25 14:18:31,840 - root - INFO - 应用程序退出，退出码: 0
+2025-11-25 14:21:31,762 - root - INFO - 日志系统初始化成功
+2025-11-25 14:21:31,763 - root - INFO - 启动废弃物AI识别指导投放系统
+2025-11-25 14:21:31,763 - root - INFO - 错误恢复系统已启用
+2025-11-25 14:21:31,765 - root - WARNING - 缺少可选依赖库: pyttsx3 (语音功能), pygame (音频播放), rknnlite (RKNN推理), RPi.GPIO (GPIO控制)
+某些功能可能受限，但系统仍可正常运行。
+2025-11-25 14:21:31,889 - utils.config_manager - INFO - 配置目录已创建: config
+2025-11-25 14:21:31,890 - utils.config_manager - INFO - 系统配置加载成功
+2025-11-25 14:21:31,890 - utils.config_manager - INFO - 垃圾分类配置加载成功
+2025-11-25 14:21:31,891 - utils.config_manager - INFO - 配置对象解析完成
+2025-11-25 14:21:31,891 - utils.config_manager - INFO - 配置加载完成
+2025-11-25 14:21:31,891 - root - INFO - 配置管理器加载完成
+2025-11-25 14:21:34,465 - utils.voice_content_manager - INFO - 语音内容加载成功
+2025-11-25 14:21:34,468 - utils.enhanced_voice_guide - WARNING - 没有可用的语音引擎
+2025-11-25 14:21:34,469 - utils.voice_integration - INFO - 语音指导兼容层已初始化
+2025-11-25 14:21:34,469 - utils.voice_integration - INFO - 语音集成管理器已初始化
+2025-11-25 14:21:34,475 - ui.guidance_widget - INFO - 使用传入的语音指导实例
+2025-11-25 14:21:35,046 - worker.waste_detection_worker - WARNING - RKNN不可用，将使用模拟检测
+2025-11-25 14:21:35,047 - worker.waste_detection_worker - INFO - IO控制检测已禁用
+2025-11-25 14:21:35,047 - ui.main_window - INFO - 🔧 开始初始化运动检测工作器...
+2025-11-25 14:21:35,048 - ui.main_window - ERROR - ❌ MotionDetectionWorker类未成功导入，运动检测功能不可用
+2025-11-25 14:21:35,048 - ui.main_window - INFO - IO控制已禁用
+2025-11-25 14:21:35,048 - ui.main_window - INFO - 动态状态组件连接成功
+2025-11-25 14:21:35,049 - ui.animation_window - INFO - 动画窗口设置为全屏: 1707x1067
+2025-11-25 14:21:35,049 - ui.animation_window - INFO - 动画窗口快捷键设置完成: ESC(隐藏)
+2025-11-25 14:21:35,053 - ui.animation_window - INFO - 成功加载动画: 待机.gif (状态: standby)
+2025-11-25 14:21:35,054 - ui.animation_window - INFO - 切换到待机状态
+2025-11-25 14:21:35,054 - ui.animation_window - INFO - 动画窗口初始化完成
+2025-11-25 14:21:35,054 - ui.main_window - INFO - 动画窗口快捷键设置完成: F11/Ctrl+Alt+A
+2025-11-25 14:21:35,193 - ui.animation_window - INFO - 动画窗口已显示
+2025-11-25 14:21:35,193 - ui.main_window - INFO - 动画窗口初始化完成
+2025-11-25 14:21:35,293 - root - INFO - 主窗口显示成功
+2025-11-25 14:21:35,297 - root - INFO - 系统启动完成，耗时: 3.54秒
+2025-11-25 14:21:35,705 - worker.waste_detection_worker - INFO - 摄像头初始化成功: 设备ID=0
+2025-11-25 14:21:38,481 - ui.animation_window - INFO - 动画窗口已隐藏
+2025-11-25 14:21:38,481 - ui.animation_window - INFO - 动画窗口切换: 隐藏
+2025-11-25 14:21:38,481 - ui.main_window - INFO - 通过快捷键切换动画窗口: 隐藏
+2025-11-25 14:22:29,844 - utils.config_manager - INFO - 系统配置保存成功
+2025-11-25 14:22:29,845 - utils.config_manager - INFO - 配置对象解析完成
+2025-11-25 14:22:29,845 - utils.config_manager - INFO - 配置更新成功: system.voice_assistant.enable_voice_assistant = True
+2025-11-25 14:27:18,854 - ui.main_window - INFO - 动画窗口已关闭
+2025-11-25 14:27:18,854 - ui.animation_window - INFO - 动画窗口已关闭
+2025-11-25 14:27:18,855 - utils.enhanced_voice_guide - INFO - 语音系统资源已清理
+2025-11-25 14:27:18,856 - ui.main_window - INFO - 应用程序正常关闭
+2025-11-25 14:27:18,885 - root - INFO - 应用程序退出，退出码: 0
+2025-11-25 14:35:21,018 - root - INFO - 日志系统初始化成功
+2025-11-25 14:35:21,018 - root - INFO - 启动废弃物AI识别指导投放系统
+2025-11-25 14:35:21,018 - root - INFO - 错误恢复系统已启用
+2025-11-25 14:35:21,021 - root - WARNING - 缺少可选依赖库: pyttsx3 (语音功能), pygame (音频播放), rknnlite (RKNN推理), RPi.GPIO (GPIO控制)
+某些功能可能受限，但系统仍可正常运行。
+2025-11-25 14:35:21,159 - utils.config_manager - INFO - 配置目录已创建: config
+2025-11-25 14:35:21,160 - utils.config_manager - INFO - 系统配置加载成功
+2025-11-25 14:35:21,161 - utils.config_manager - INFO - 垃圾分类配置加载成功
+2025-11-25 14:35:21,161 - utils.config_manager - INFO - 配置对象解析完成
+2025-11-25 14:35:21,161 - utils.config_manager - INFO - 配置加载完成
+2025-11-25 14:35:21,161 - root - INFO - 配置管理器加载完成
+2025-11-25 14:35:23,712 - utils.voice_content_manager - INFO - 语音内容加载成功
+2025-11-25 14:35:23,712 - utils.enhanced_voice_guide - WARNING - 没有可用的语音引擎
+2025-11-25 14:35:23,713 - utils.voice_integration - INFO - 语音指导兼容层已初始化
+2025-11-25 14:35:23,713 - utils.voice_integration - INFO - 语音集成管理器已初始化
+2025-11-25 14:35:23,716 - ui.guidance_widget - INFO - 使用传入的语音指导实例
+2025-11-25 14:35:24,248 - worker.waste_detection_worker - WARNING - RKNN不可用，将使用模拟检测
+2025-11-25 14:35:24,248 - worker.waste_detection_worker - INFO - IO控制检测已禁用
+2025-11-25 14:35:24,248 - ui.main_window - INFO - 🔧 开始初始化运动检测工作器...
+2025-11-25 14:35:24,248 - ui.main_window - ERROR - ❌ MotionDetectionWorker类未成功导入，运动检测功能不可用
+2025-11-25 14:35:24,249 - ui.main_window - INFO - IO控制已禁用
+2025-11-25 14:35:24,249 - ui.main_window - INFO - 动态状态组件连接成功
+2025-11-25 14:35:24,249 - ui.animation_window - INFO - 动画窗口设置为全屏: 1707x1067
+2025-11-25 14:35:24,250 - ui.animation_window - INFO - 动画窗口快捷键设置完成: ESC(隐藏)
+2025-11-25 14:35:24,255 - ui.animation_window - INFO - 成功加载动画: 待机.gif (状态: standby)
+2025-11-25 14:35:24,256 - ui.animation_window - INFO - 切换到待机状态
+2025-11-25 14:35:24,256 - ui.animation_window - INFO - 动画窗口初始化完成
+2025-11-25 14:35:24,256 - ui.main_window - INFO - 动画窗口快捷键设置完成: F11/Ctrl+Alt+A
+2025-11-25 14:35:24,392 - ui.animation_window - INFO - 动画窗口已显示
+2025-11-25 14:35:24,393 - ui.main_window - INFO - 动画窗口初始化完成
+2025-11-25 14:35:24,493 - root - INFO - 主窗口显示成功
+2025-11-25 14:35:24,496 - root - INFO - 系统启动完成，耗时: 3.48秒
+2025-11-25 14:35:24,921 - worker.waste_detection_worker - INFO - 摄像头初始化成功: 设备ID=0
+2025-11-25 14:35:25,851 - ui.animation_window - INFO - 动画窗口已隐藏
+2025-11-25 14:35:25,851 - ui.animation_window - INFO - 动画窗口切换: 隐藏
+2025-11-25 14:35:25,852 - ui.main_window - INFO - 通过快捷键切换动画窗口: 隐藏
+2025-11-25 14:35:29,581 - ui.main_window - INFO - 🚀 用户点击开始检测按钮
+2025-11-25 14:35:29,581 - ui.main_window - INFO - 📊 当前模式状态: RKNN=False, 运动检测=True
+2025-11-25 14:35:29,581 - ui.main_window - INFO - 🎯 启动运动检测模式...
+2025-11-25 14:35:29,581 - ui.main_window - ERROR - ❌ 运动检测工作器不存在
+2025-11-25 14:36:39,959 - root - INFO - 日志系统初始化成功
+2025-11-25 14:36:39,960 - root - INFO - 启动废弃物AI识别指导投放系统
+2025-11-25 14:36:39,960 - root - INFO - 错误恢复系统已启用
+2025-11-25 14:36:39,962 - root - WARNING - 缺少可选依赖库: pyttsx3 (语音功能), pygame (音频播放), rknnlite (RKNN推理), RPi.GPIO (GPIO控制)
+某些功能可能受限，但系统仍可正常运行。
+2025-11-25 14:36:40,089 - utils.config_manager - INFO - 配置目录已创建: config
+2025-11-25 14:36:40,089 - utils.config_manager - INFO - 系统配置加载成功
+2025-11-25 14:36:40,089 - utils.config_manager - INFO - 垃圾分类配置加载成功
+2025-11-25 14:36:40,090 - utils.config_manager - INFO - 配置对象解析完成
+2025-11-25 14:36:40,091 - utils.config_manager - INFO - 配置加载完成
+2025-11-25 14:36:40,091 - root - INFO - 配置管理器加载完成
+2025-11-25 14:36:42,663 - utils.voice_content_manager - INFO - 语音内容加载成功
+2025-11-25 14:36:42,663 - utils.enhanced_voice_guide - WARNING - 没有可用的语音引擎
+2025-11-25 14:36:42,664 - utils.voice_integration - INFO - 语音指导兼容层已初始化
+2025-11-25 14:36:42,664 - utils.voice_integration - INFO - 语音集成管理器已初始化
+2025-11-25 14:36:42,667 - ui.guidance_widget - INFO - 使用传入的语音指导实例
+2025-11-25 14:36:43,116 - worker.waste_detection_worker - WARNING - RKNN不可用，将使用模拟检测
+2025-11-25 14:36:43,116 - worker.waste_detection_worker - INFO - IO控制检测已禁用
+2025-11-25 14:36:43,116 - ui.main_window - INFO - 🔧 开始初始化运动检测工作器...
+2025-11-25 14:36:43,117 - ui.main_window - ERROR - ❌ MotionDetectionWorker类未成功导入，运动检测功能不可用
+2025-11-25 14:36:43,117 - ui.main_window - INFO - IO控制已禁用
+2025-11-25 14:36:43,117 - ui.main_window - INFO - 动态状态组件连接成功
+2025-11-25 14:36:43,117 - ui.animation_window - INFO - 动画窗口设置为全屏: 1707x1067
+2025-11-25 14:36:43,118 - ui.animation_window - INFO - 动画窗口快捷键设置完成: ESC(隐藏)
+2025-11-25 14:36:43,123 - ui.animation_window - INFO - 成功加载动画: 待机.gif (状态: standby)
+2025-11-25 14:36:43,123 - ui.animation_window - INFO - 切换到待机状态
+2025-11-25 14:36:43,123 - ui.animation_window - INFO - 动画窗口初始化完成
+2025-11-25 14:36:43,123 - ui.main_window - INFO - 动画窗口快捷键设置完成: F11/Ctrl+Alt+A
+2025-11-25 14:36:43,267 - ui.animation_window - INFO - 动画窗口已显示
+2025-11-25 14:36:43,267 - ui.main_window - INFO - 动画窗口初始化完成
+2025-11-25 14:36:43,366 - root - INFO - 主窗口显示成功
+2025-11-25 14:36:43,370 - root - INFO - 系统启动完成，耗时: 3.41秒
+2025-11-25 14:36:43,550 - worker.waste_detection_worker - INFO - 摄像头初始化成功: 设备ID=0
+2025-11-25 14:36:43,553 - ui.main_window - ERROR - 检测错误: 读取摄像头帧失败
+2025-11-25 14:36:43,553 - ui.main_window - ERROR - 摄像头错误: 读取摄像头帧失败
+2025-11-25 14:36:45,072 - ui.animation_window - INFO - 动画窗口已隐藏
+2025-11-25 14:36:45,072 - ui.animation_window - INFO - 动画窗口切换: 隐藏
+2025-11-25 14:36:45,073 - ui.main_window - INFO - 通过快捷键切换动画窗口: 隐藏
+2025-11-25 14:36:45,273 - utils.voice_debug - WARNING - ⚠️ 检测到并发语音调用: 欢迎使用智能垃圾分类系统，请将废弃物放在检测区域... (来源: EnhancedVoiceGuide)
+2025-11-25 14:36:50,083 - ui.main_window - INFO - 动画窗口已关闭
+2025-11-25 14:36:50,083 - ui.animation_window - INFO - 动画窗口已关闭
+2025-11-25 14:36:50,084 - utils.enhanced_voice_guide - INFO - 语音系统资源已清理
+2025-11-25 14:36:50,084 - ui.main_window - INFO - 应用程序正常关闭
+2025-11-25 14:36:50,092 - root - INFO - 应用程序退出，退出码: 0
+2025-11-25 14:36:54,452 - ui.main_window - INFO - 🚀 用户点击开始检测按钮
+2025-11-25 14:36:54,452 - ui.main_window - INFO - 📊 当前模式状态: RKNN=False, 运动检测=True
+2025-11-25 14:36:54,452 - ui.main_window - INFO - 🎯 启动运动检测模式...
+2025-11-25 14:36:54,452 - ui.main_window - ERROR - ❌ 运动检测工作器不存在
+2025-11-25 14:36:59,302 - ui.main_window - INFO - 🚀 用户点击开始检测按钮
+2025-11-25 14:36:59,303 - ui.main_window - INFO - 📊 当前模式状态: RKNN=False, 运动检测=True
+2025-11-25 14:36:59,303 - ui.main_window - INFO - 🎯 启动运动检测模式...
+2025-11-25 14:36:59,303 - ui.main_window - ERROR - ❌ 运动检测工作器不存在
+2025-11-25 14:37:01,699 - ui.main_window - INFO - 动画窗口已关闭
+2025-11-25 14:37:01,699 - ui.animation_window - INFO - 动画窗口已关闭
+2025-11-25 14:37:01,701 - utils.enhanced_voice_guide - INFO - 语音系统资源已清理
+2025-11-25 14:37:01,702 - ui.main_window - INFO - 应用程序正常关闭
+2025-11-25 14:37:01,728 - root - INFO - 应用程序退出，退出码: 0
+2025-11-25 14:38:01,667 - root - INFO - 日志系统初始化成功
+2025-11-25 14:38:01,667 - root - INFO - 启动废弃物AI识别指导投放系统
+2025-11-25 14:38:01,667 - root - INFO - 错误恢复系统已启用
+2025-11-25 14:38:01,668 - root - WARNING - 缺少可选依赖库: pyttsx3 (语音功能), pygame (音频播放), rknnlite (RKNN推理), RPi.GPIO (GPIO控制)
+某些功能可能受限，但系统仍可正常运行。
+2025-11-25 14:38:01,793 - utils.config_manager - INFO - 配置目录已创建: config
+2025-11-25 14:38:01,794 - utils.config_manager - INFO - 系统配置加载成功
+2025-11-25 14:38:01,794 - utils.config_manager - INFO - 垃圾分类配置加载成功
+2025-11-25 14:38:01,794 - utils.config_manager - INFO - 配置对象解析完成
+2025-11-25 14:38:01,795 - utils.config_manager - INFO - 配置加载完成
+2025-11-25 14:38:01,795 - root - INFO - 配置管理器加载完成
+2025-11-25 14:38:04,353 - utils.voice_content_manager - INFO - 语音内容加载成功
+2025-11-25 14:38:04,354 - utils.enhanced_voice_guide - WARNING - 没有可用的语音引擎
+2025-11-25 14:38:04,354 - utils.voice_integration - INFO - 语音指导兼容层已初始化
+2025-11-25 14:38:04,354 - utils.voice_integration - INFO - 语音集成管理器已初始化
+2025-11-25 14:38:04,358 - ui.guidance_widget - INFO - 使用传入的语音指导实例
+2025-11-25 14:38:04,795 - worker.waste_detection_worker - WARNING - RKNN不可用，将使用模拟检测
+2025-11-25 14:38:04,795 - worker.waste_detection_worker - INFO - IO控制检测已禁用
+2025-11-25 14:38:04,796 - ui.main_window - INFO - 🔧 开始初始化运动检测工作器...
+2025-11-25 14:38:04,796 - ui.main_window - ERROR - ❌ MotionDetectionWorker类未成功导入，运动检测功能不可用
+2025-11-25 14:38:04,796 - ui.main_window - INFO - IO控制已禁用
+2025-11-25 14:38:04,796 - ui.main_window - INFO - 动态状态组件连接成功
+2025-11-25 14:38:04,797 - ui.animation_window - INFO - 动画窗口设置为全屏: 1707x1067
+2025-11-25 14:38:04,797 - ui.animation_window - INFO - 动画窗口快捷键设置完成: ESC(隐藏)
+2025-11-25 14:38:04,803 - ui.animation_window - INFO - 成功加载动画: 待机.gif (状态: standby)
+2025-11-25 14:38:04,803 - ui.animation_window - INFO - 切换到待机状态
+2025-11-25 14:38:04,803 - ui.animation_window - INFO - 动画窗口初始化完成
+2025-11-25 14:38:04,803 - ui.main_window - INFO - 动画窗口快捷键设置完成: F11/Ctrl+Alt+A
+2025-11-25 14:38:04,941 - ui.animation_window - INFO - 动画窗口已显示
+2025-11-25 14:38:04,941 - ui.main_window - INFO - 动画窗口初始化完成
+2025-11-25 14:38:05,030 - root - INFO - 主窗口显示成功
+2025-11-25 14:38:05,033 - root - INFO - 系统启动完成，耗时: 3.37秒
+2025-11-25 14:38:05,405 - worker.waste_detection_worker - INFO - 摄像头初始化成功: 设备ID=0
+2025-11-25 14:38:06,633 - ui.animation_window - INFO - 动画窗口已隐藏
+2025-11-25 14:38:06,633 - ui.animation_window - INFO - 动画窗口切换: 隐藏
+2025-11-25 14:38:06,633 - ui.main_window - INFO - 通过快捷键切换动画窗口: 隐藏
+2025-11-25 14:38:09,092 - ui.main_window - INFO - 🚀 用户点击开始检测按钮
+2025-11-25 14:38:09,092 - ui.main_window - INFO - 📊 当前模式状态: RKNN=False, 运动检测=True
+2025-11-25 14:38:09,092 - ui.main_window - INFO - 🎯 启动运动检测模式...
+2025-11-25 14:38:09,092 - ui.main_window - ERROR - ❌ 运动检测工作器不存在
+2025-11-25 14:38:12,419 - ui.main_window - INFO - 动画窗口已关闭
+2025-11-25 14:38:12,419 - ui.animation_window - INFO - 动画窗口已关闭
+2025-11-25 14:38:12,420 - utils.enhanced_voice_guide - INFO - 语音系统资源已清理
+2025-11-25 14:38:12,420 - ui.main_window - INFO - 应用程序正常关闭
+2025-11-25 14:38:12,449 - root - INFO - 应用程序退出，退出码: 0
+2025-11-25 14:43:06,758 - root - INFO - 日志系统初始化成功
+2025-11-25 14:43:06,758 - root - INFO - 启动废弃物AI识别指导投放系统
+2025-11-25 14:43:06,759 - root - INFO - 错误恢复系统已启用
+2025-11-25 14:43:06,760 - root - WARNING - 缺少可选依赖库: rknnlite (RKNN推理), RPi.GPIO (GPIO控制)
+某些功能可能受限，但系统仍可正常运行。
+2025-11-25 14:43:06,799 - utils.config_manager - INFO - 配置目录已创建: config
+2025-11-25 14:43:06,799 - utils.config_manager - INFO - 系统配置加载成功
+2025-11-25 14:43:06,800 - utils.config_manager - INFO - 垃圾分类配置加载成功
+2025-11-25 14:43:06,800 - utils.config_manager - INFO - 配置对象解析完成
+2025-11-25 14:43:06,800 - utils.config_manager - INFO - 配置加载完成
+2025-11-25 14:43:06,801 - root - INFO - 配置管理器加载完成
+2025-11-25 14:43:09,381 - utils.voice_content_manager - INFO - 语音内容加载成功
+2025-11-25 14:43:09,478 - utils.voice_engine_base.SAPIEngine - INFO - SAPI引擎初始化成功
+2025-11-25 14:43:09,478 - utils.enhanced_voice_guide - INFO - 使用语音引擎: sapi
+2025-11-25 14:43:09,523 - comtypes.client._code_cache - INFO - Could not import comtypes.gen, trying to create it.
+2025-11-25 14:43:09,524 - comtypes.client._code_cache - INFO - Created comtypes.gen directory: 'C:\01_work\02_program\废弃物AI识别指导投放项目\.venv\Lib\site-packages\comtypes\gen'
+2025-11-25 14:43:09,524 - comtypes.client._code_cache - INFO - Writing __init__.py file: 'C:\01_work\02_program\废弃物AI识别指导投放项目\.venv\Lib\site-packages\comtypes\gen\__init__.py'
+2025-11-25 14:43:09,527 - comtypes.client._code_cache - INFO - Using writeable comtypes cache directory: 'C:\01_work\02_program\废弃物AI识别指导投放项目\.venv\Lib\site-packages\comtypes\gen'
+2025-11-25 14:43:09,530 - comtypes.client._generate - INFO - Could not import comtypes.gen._C866CA3A_32F7_11D2_9602_00C04F8EE628_0_5_4: No module named 'comtypes.gen._C866CA3A_32F7_11D2_9602_00C04F8EE628_0_5_4'
+2025-11-25 14:43:09,537 - comtypes.client._generate - INFO - # Generating comtypes.gen._C866CA3A_32F7_11D2_9602_00C04F8EE628_0_5_4
+2025-11-25 14:43:09,595 - comtypes.client._generate - INFO - # Generating comtypes.gen.SpeechLib
+2025-11-25 14:43:09,600 - comtypes.client._generate - INFO - Could not import comtypes.gen._00020430_0000_0000_C000_000000000046_0_2_0: No module named 'comtypes.gen._00020430_0000_0000_C000_000000000046_0_2_0'
+2025-11-25 14:43:09,602 - comtypes.client._generate - INFO - # Generating comtypes.gen._00020430_0000_0000_C000_000000000046_0_2_0
+2025-11-25 14:43:09,606 - comtypes.client._generate - INFO - # Generating comtypes.gen.stdole
+2025-11-25 14:43:09,859 - utils.voice_engine_base.Pyttsx3Engine - INFO - Pyttsx3引擎初始化成功
+2025-11-25 14:43:09,859 - utils.enhanced_voice_guide - INFO - 已初始化 2 个语音引擎: ['sapi', 'pyttsx3']
+2025-11-25 14:43:09,860 - utils.enhanced_voice_guide - INFO - 语音工作线程已启动
+2025-11-25 14:43:09,860 - utils.voice_integration - INFO - 语音指导兼容层已初始化
+2025-11-25 14:43:09,860 - utils.voice_integration - INFO - 语音集成管理器已初始化
+2025-11-25 14:43:09,864 - ui.guidance_widget - INFO - 使用传入的语音指导实例
+2025-11-25 14:43:10,312 - worker.waste_detection_worker - WARNING - RKNN不可用，将使用模拟检测
+2025-11-25 14:43:10,313 - worker.waste_detection_worker - INFO - IO控制检测已禁用
+2025-11-25 14:43:10,313 - ui.main_window - INFO - 🔧 开始初始化运动检测工作器...
+2025-11-25 14:43:10,313 - ui.main_window - INFO - ✅ MotionDetectionWorker类导入成功
+2025-11-25 14:43:10,313 - ui.main_window - INFO - ✅ 配置管理器可用
+2025-11-25 14:43:10,313 - ui.main_window - INFO - 📊 运动检测配置: enable_motion_detection=True
+2025-11-25 14:43:10,314 - ui.main_window - INFO - ✅ 基础检测工作器可用
+2025-11-25 14:43:10,314 - ui.main_window - INFO - 🔄 创建运动检测工作器实例...
+2025-11-25 14:43:10,314 - utils.motion_detector - INFO - 运动检测器初始化完成: threshold=800, min_area=1500, model=MOG2
+2025-11-25 14:43:10,314 - utils.api_client - INFO - API客户端初始化完成: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+2025-11-25 14:43:10,314 - root - INFO - 运动检测工作线程初始化完成: smart=False, capture_delay=1.00s
+2025-11-25 14:43:10,314 - ui.main_window - INFO - ✅ 运动检测工作器实例创建成功
+2025-11-25 14:43:10,314 - ui.main_window - INFO - 🔄 连接运动检测信号...
+2025-11-25 14:43:10,315 - ui.main_window - INFO - ✅ 信号连接成功
+2025-11-25 14:43:10,315 - ui.main_window - INFO - 🔄 启动运动检测工作器线程...
+2025-11-25 14:43:10,315 - root - INFO - 运动检测已启用
+2025-11-25 14:43:10,315 - ui.main_window - INFO - ✅ 运动检测工作器已启动并自动启用
+2025-11-25 14:43:10,315 - ui.main_window - INFO - ✅ 运动检测工作器初始化完全成功并已自动启动
+2025-11-25 14:43:10,315 - ui.main_window - INFO - IO控制已禁用
+2025-11-25 14:43:10,315 - ui.main_window - INFO - 动态状态组件连接成功
+2025-11-25 14:43:10,316 - ui.animation_window - INFO - 动画窗口设置为全屏: 1707x1067
+2025-11-25 14:43:10,316 - ui.animation_window - INFO - 动画窗口快捷键设置完成: ESC(隐藏)
+2025-11-25 14:43:10,319 - ui.animation_window - INFO - 成功加载动画: 待机.gif (状态: standby)
+2025-11-25 14:43:10,319 - root - INFO - 运动检测工作线程开始运行
+2025-11-25 14:43:10,320 - ui.animation_window - INFO - 切换到待机状态
+2025-11-25 14:43:10,320 - ui.animation_window - INFO - 动画窗口初始化完成
+2025-11-25 14:43:10,320 - ui.main_window - INFO - 动画窗口快捷键设置完成: F11/Ctrl+Alt+A
+2025-11-25 14:43:10,455 - ui.animation_window - INFO - 动画窗口已显示
+2025-11-25 14:43:10,455 - ui.main_window - INFO - 动画窗口初始化完成
+2025-11-25 14:43:10,456 - utils.llm_client - WARNING - LLM配置不完整，聊天功能将使用本地应急回答
+2025-11-25 14:43:10,459 - utils.voice_assistant - INFO - VoiceAssistantWorker 线程启动
+2025-11-25 14:43:10,481 - utils.voice_assistant - WARNING - ASR引擎不可用，无法语音唤醒
+2025-11-25 14:43:10,482 - utils.voice_assistant - INFO - VoiceAssistantWorker 线程结束
+2025-11-25 14:43:10,551 - root - INFO - 主窗口显示成功
+2025-11-25 14:43:10,554 - root - INFO - 系统启动完成，耗时: 3.80秒
+2025-11-25 14:43:10,867 - worker.waste_detection_worker - INFO - 摄像头初始化成功: 设备ID=0
+2025-11-25 14:43:12,097 - ui.main_window - INFO - 检测到运动
+2025-11-25 14:43:12,097 - ui.dynamic_status_widget - INFO - 状态切换: 检测到物体
+2025-11-25 14:43:12,098 - ui.main_window - INFO - 识别状态变化: detected
+2025-11-25 14:43:12,099 - ui.animation_window - INFO - 成功加载动画: 识别.gif (状态: detecting)
+2025-11-25 14:43:12,099 - ui.animation_window - INFO - 切换到识别中状态
+2025-11-25 14:43:12,459 - utils.voice_debug - WARNING - ⚠️ 检测到并发语音调用: 您好！我是您的垃圾分类小助手，让我们一起保护环境吧... (来源: EnhancedVoiceGuide)
+2025-11-25 14:43:13,109 - root - INFO - 运动检测已保存图片: data/captured_images\motion_detected_20251125_144313_104.jpg
+2025-11-25 14:43:13,110 - root - INFO - 开始调用大模型API识别...
+2025-11-25 14:43:13,110 - ui.main_window - INFO - 图片已捕获: data/captured_images\motion_detected_20251125_144313_104.jpg
+2025-11-25 14:43:13,110 - ui.dynamic_status_widget - INFO - 状态切换: 正在识别
+2025-11-25 14:43:13,111 - ui.main_window - INFO - 识别状态变化: recognizing
+2025-11-25 14:43:13,123 - ui.dynamic_status_widget - INFO - 已显示捕获的图片: motion_detected_20251125_144313_104.jpg
+2025-11-25 14:43:13,123 - utils.voice_debug - WARNING - ⚠️ 检测到并发语音调用: 马上就好，请稍等片刻... (来源: EnhancedVoiceGuide)
+2025-11-25 14:43:18,386 - root - INFO - 运动检测识别完成: 未识别到具体物品-未细分-未知物品
+2025-11-25 14:43:18,386 - ui.main_window - INFO - 收到API结果: {'category': '未识别到具体物品-未细分-未知物品', 'composition': '', 'degradation_time': '', 'description': '暂未提供详细的组成和回收信息', 'detection_method': 'motion_detection', 'image_path': 'data/captured_images\\motion_detected_20251125_144313_104.jpg', 'motion_state': 'present_stable', 'recycling_value': '', 'stability_duration': 0.0, 'timestamp': '2025-11-25 14:43:18', 'trigger_time': '2025-11-25T14:43:18.386896'}
+2025-11-25 14:43:18,387 - ui.dynamic_status_widget - INFO - 状态切换: 识别成功 - 未识别到具体物品-未细分-未知物品
+2025-11-25 14:43:18,389 - ui.main_window - INFO - 识别状态变化: success
+2025-11-25 14:43:18,403 - ui.animation_window - INFO - 成功加载动画: 4.gif (状态: other)
+2025-11-25 14:43:18,405 - ui.animation_window - INFO - 更新信息显示: 未识别到具体物品 - 未细分-未知物品
+2025-11-25 14:43:18,405 - ui.animation_window - INFO - 切换到识别结果状态: 未识别到具体物品 -> other
+2025-11-25 14:43:18,407 - ui.guidance_widget - INFO - API识别图片: data/captured_images\motion_detected_20251125_144313_104.jpg
+2025-11-25 14:43:18,408 - ui.guidance_widget - INFO - API识别时间: 2025-11-25 14:43:18
+2025-11-25 14:43:18,408 - ui.main_window - INFO - API结果已显示在检测结果区域: 未识别到具体物品-未细分-未知物品
+2025-11-25 14:43:18,408 - ui.main_window - INFO - 运动检测完成: {'category': '未识别到具体物品-未细分-未知物品', 'composition': '', 'degradation_time': '', 'description': '暂未提供详细的组成和回收信息', 'detection_method': 'motion_detection', 'image_path': 'data/captured_images\\motion_detected_20251125_144313_104.jpg', 'motion_state': 'present_stable', 'recycling_value': '', 'stability_duration': 0.0, 'timestamp': '2025-11-25 14:43:18', 'trigger_time': '2025-11-25T14:43:18.386896'}
+2025-11-25 14:43:18,410 - ui.guidance_widget - INFO - 运动检测图片: data/captured_images\motion_detected_20251125_144313_104.jpg
+2025-11-25 14:43:18,410 - utils.voice_debug - WARNING - ⚠️ 检测到并发语音调用: 识别成功，检测到未识别到具体物品。... (来源: EnhancedVoiceGuide)
+2025-11-25 14:43:19,911 - utils.voice_debug - WARNING - ⚠️ 检测到并发语音调用: 这个未识别到具体物品的家在对应垃圾桶里... (来源: EnhancedVoiceGuide)
+2025-11-25 14:43:23,410 - ui.animation_window - INFO - 成功加载动画: 提示.gif (状态: hint)
+2025-11-25 14:43:23,411 - ui.animation_window - INFO - 切换到提示状态
+2025-11-25 14:43:23,451 - root - INFO - 运动检测已禁用
+2025-11-25 14:43:23,453 - ui.animation_window - INFO - 动画窗口已隐藏
+2025-11-25 14:43:23,453 - ui.animation_window - INFO - 动画窗口切换: 隐藏
+2025-11-25 14:43:23,453 - ui.main_window - INFO - 通过快捷键切换动画窗口: 隐藏
+2025-11-25 14:43:23,528 - ui.dynamic_status_widget - INFO - 状态切换: 等待检测
+2025-11-25 14:43:23,529 - ui.main_window - INFO - 识别状态变化: waiting
+2025-11-25 14:43:24,466 - utils.motion_detector - INFO - 运动检测器背景模型已重置
+2025-11-25 14:43:24,467 - root - INFO - 运动检测器背景模型已重置
+2025-11-25 14:43:24,467 - root - INFO - 运动检测已启用
+2025-11-25 14:43:27,343 - ui.main_window - INFO - 检测到运动
+2025-11-25 14:43:27,343 - ui.dynamic_status_widget - INFO - 状态切换: 检测到物体
+2025-11-25 14:43:27,344 - ui.main_window - INFO - 识别状态变化: detected
+2025-11-25 14:43:27,346 - ui.animation_window - INFO - 成功加载动画: 识别.gif (状态: detecting)
+2025-11-25 14:43:27,346 - ui.animation_window - INFO - 切换到识别中状态
+2025-11-25 14:43:27,346 - utils.voice_debug - WARNING - ⚠️ 检测到并发语音调用: 哇，有东西来了！正在仔细观察中... (来源: EnhancedVoiceGuide)
+2025-11-25 14:43:28,355 - root - INFO - 运动检测已保存图片: data/captured_images\motion_detected_20251125_144328_351.jpg
+2025-11-25 14:43:28,356 - root - INFO - 开始调用大模型API识别...
+2025-11-25 14:43:28,356 - ui.main_window - INFO - 图片已捕获: data/captured_images\motion_detected_20251125_144328_351.jpg
+2025-11-25 14:43:28,356 - ui.dynamic_status_widget - INFO - 状态切换: 正在识别
+2025-11-25 14:43:28,357 - ui.main_window - INFO - 识别状态变化: recognizing
+2025-11-25 14:43:28,366 - ui.dynamic_status_widget - INFO - 已显示捕获的图片: motion_detected_20251125_144328_351.jpg
+2025-11-25 14:43:28,366 - utils.voice_debug - WARNING - ⚠️ 检测到并发语音调用: 正在努力识别中，请耐心等待... (来源: EnhancedVoiceGuide)
+2025-11-25 14:43:34,045 - utils.api_client - ERROR - API原始JSON文本: ```json
+{
+    "category": "垃圾分类-细分类-快递包装",
+    "composition": "塑料袋、纸张等",
+    "degradation_time": "塑料袋：数百年；纸张：几个月到几年",
+    "recycling_value": "塑料袋和纸张都可以回收利用。建议将塑料袋和纸张分开投放，以便于回收处理。"
+}
+```
+2025-11-25 14:43:34,046 - utils.api_client - ERROR - API响应不是有效的JSON格式
+2025-11-25 14:43:34,046 - root - INFO - 运动检测识别完成: 其他垃圾-其他类-未知物品
+2025-11-25 14:43:34,046 - ui.main_window - INFO - 收到API结果: {'category': '其他垃圾-其他类-未知物品', 'composition': '暂未获取到组成信息', 'degradation_time': '暂未获取到降解时间参考', 'description': '暂未提供详细的组成和回收信息', 'detection_method': 'motion_detection', 'image_path': 'data/captured_images\\motion_detected_20251125_144328_351.jpg', 'motion_state': 'present_stable', 'recycling_value': '暂未获取到回收利用建议', 'stability_duration': 0.0, 'timestamp': '2025-11-25 14:43:34', 'trigger_time': '2025-11-25T14:43:34.046941'}
+2025-11-25 14:43:34,047 - ui.dynamic_status_widget - INFO - 状态切换: 识别成功 - 其他垃圾-其他类-未知物品
+2025-11-25 14:43:34,049 - ui.main_window - INFO - 识别状态变化: success
+2025-11-25 14:43:34,061 - ui.animation_window - INFO - 成功加载动画: 4.gif (状态: other)
+2025-11-25 14:43:34,061 - ui.animation_window - INFO - 更新信息显示: 其他垃圾 - 其他类-未知物品
+2025-11-25 14:43:34,061 - ui.animation_window - INFO - 切换到识别结果状态: 其他垃圾 -> other
+2025-11-25 14:43:34,064 - ui.guidance_widget - INFO - API识别图片: data/captured_images\motion_detected_20251125_144328_351.jpg
+2025-11-25 14:43:34,064 - ui.guidance_widget - INFO - API识别时间: 2025-11-25 14:43:34
+2025-11-25 14:43:34,065 - ui.main_window - INFO - API结果已显示在检测结果区域: 其他垃圾-其他类-未知物品
+2025-11-25 14:43:34,065 - ui.main_window - INFO - 运动检测完成: {'category': '其他垃圾-其他类-未知物品', 'composition': '暂未获取到组成信息', 'degradation_time': '暂未获取到降解时间参考', 'description': '暂未提供详细的组成和回收信息', 'detection_method': 'motion_detection', 'image_path': 'data/captured_images\\motion_detected_20251125_144328_351.jpg', 'motion_state': 'present_stable', 'recycling_value': '暂未获取到回收利用建议', 'stability_duration': 0.0, 'timestamp': '2025-11-25 14:43:34', 'trigger_time': '2025-11-25T14:43:34.046941'}
+2025-11-25 14:43:34,067 - ui.guidance_widget - INFO - 运动检测图片: data/captured_images\motion_detected_20251125_144328_351.jpg
+2025-11-25 14:43:34,067 - utils.voice_debug - WARNING - ⚠️ 检测到并发语音调用: 识别成功，检测到其他垃圾。... (来源: EnhancedVoiceGuide)
+2025-11-25 14:43:35,568 - utils.voice_debug - WARNING - ⚠️ 检测到并发语音调用: 主要成分包括暂未获取到组成信息。 在自然环境中大约需要暂未获... (来源: EnhancedVoiceGuide)
+2025-11-25 14:43:39,063 - ui.animation_window - INFO - 成功加载动画: 提示.gif (状态: hint)
+2025-11-25 14:43:39,064 - ui.animation_window - INFO - 切换到提示状态
+2025-11-25 14:43:39,171 - ui.dynamic_status_widget - INFO - 状态切换: 等待检测
+2025-11-25 14:43:39,171 - ui.main_window - INFO - 识别状态变化: waiting
+2025-11-25 14:43:41,607 - root - INFO - 运动检测工作线程退出
+2025-11-25 14:43:41,608 - root - INFO - 运动检测工作线程已停止
+2025-11-25 14:43:41,609 - ui.main_window - INFO - 动画窗口已关闭
+2025-11-25 14:43:41,609 - ui.animation_window - INFO - 动画窗口已关闭
+2025-11-25 14:43:43,613 - utils.enhanced_voice_guide - INFO - 语音系统资源已清理
+2025-11-25 14:43:43,615 - ui.main_window - INFO - 应用程序正常关闭
+2025-11-25 14:43:43,642 - root - INFO - 应用程序退出，退出码: 0
