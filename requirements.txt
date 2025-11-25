@@ -14,11 +14,19 @@ pyttsx3>=2.90
 # 音频播放
 pygame>=2.5.0
 
+# Linux高质量TTS引擎 (可选)
+edge-tts>=6.1.0
+
+# Windows语音支持 (仅Windows需要)
+pywin32>=306; sys_platform == "win32"
+
 # 网络请求
 requests>=2.31.0
 
 # 数据处理
 Pillow>=10.0.0
+speechrecognition>=3.10.0 ; sys_platform == "win32" or sys_platform == "linux"
+vosk>=0.3.45 ; sys_platform == "linux"
 
 # 测试框架
 pytest>=7.4.0

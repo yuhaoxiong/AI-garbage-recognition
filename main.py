@@ -24,9 +24,18 @@ except ImportError:
     ERROR_RECOVERY_AVAILABLE = False
     logging.warning("错误恢复模块不可用")
 
+# 导入性能监控
+try:
+    from utils.memory_manager import get_memory_manager
+    from utils.performance_monitor import get_performance_monitor
+    PERFORMANCE_MONITORING_AVAILABLE = True
+except ImportError:
+    PERFORMANCE_MONITORING_AVAILABLE = False
+    logging.warning("性能监控模块不可用")
+
 from PySide6.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QPixmap, QFont
+from PySide6.QtGui import QPixmap, QFont, QGuiApplication
 
 # 安全导入关键模块
 try:
@@ -285,6 +294,17 @@ def main():
         if ERROR_RECOVERY_AVAILABLE:
             recovery_manager = get_recovery_manager()
             logging.info("错误恢复系统已启用")
+
+        # 初始化性能监控
+        if PERFORMANCE_MONITORING_AVAILABLE:
+            memory_manager = get_memory_manager(1024)  # 1GB内存限制
+            performance_monitor = get_performance_monitor()
+
+            # 启动监控
+            memory_manager.start_monitoring()
+            performance_monitor.start_monitoring()
+
+            logging.info("性能监控系统已启用")
         
         # 检查依赖
         deps_result = safe_execute(
@@ -297,6 +317,17 @@ def main():
             print(f"依赖检查失败: {deps_result[1]}")
             return 1
         
+        # 在创建应用前启用高DPI支持与高清位图
+        try:
+            QGuiApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+            QGuiApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+            # 防止 150% 被四舍五入导致布局溢出
+            QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
+                Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+            )
+        except Exception:
+            pass
+
         # 创建应用程序
         app = QApplication(sys.argv)
         app.setApplicationName("废弃物AI识别指导投放系统")

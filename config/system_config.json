@@ -20,19 +20,34 @@
   },
   "motion_detection": {
     "enable_motion_detection": true,
-    "motion_threshold": 500,
-    "min_contour_area": 1000,
-    "detection_cooldown": 10.0,
+    "use_smart_detector": false,
+    "motion_threshold": 800,
+    "min_contour_area": 1500,
+    "detection_cooldown": 15.0,
+    "capture_delay": 1.0,
+    "max_saved_images": 10,
     "history": 500,
     "dist2_threshold": 400.0,
     "detect_shadows": true,
     "blur_kernel_size": 5,
-    "kernel_size": 3
+    "kernel_size": 3,
+    "roi_enabled": true,
+    "roi_top_ratio": 0.2,
+    "roi_bottom_ratio": 0.8,
+    "roi_left_ratio": 0.1,
+    "roi_right_ratio": 0.9,
+    "stability_threshold": 50.0,
+    "min_stability_duration": 0.5,
+    "max_stability_duration": 4.0,
+    "min_presence_area": 3000,
+    "center_movement_threshold": 100.0,
+    "min_presence_duration": 0.8,
+    "background_change_threshold": 0.1
   },
   "api": {
-    "api_url": "https://api.siliconflow.cn/v1/chat/completions",
-    "api_key": "sk-oewfivbcmnepygirqfqaabbgmwbuivjtuignkhopbrqukygx",
-    "model_name": "THUDM/GLM-4.1V-9B-Thinking",
+    "api_url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+    "api_key": "sk-a7f2419e2b6242b7bf1e7ab10158dc49",
+    "model_name": "qwen-vl-max-2024-10-30",
     "max_retries": 3,
     "timeout": 30
   },
@@ -53,6 +68,25 @@
     "voice_language": "zh",
     "volume": 0.8,
     "speech_rate": 150
+  },
+  "llm": {
+    "api_url": "",
+    "api_key": "",
+    "model_name": "",
+    "max_retries": 1,
+    "timeout": 5
+  },
+  "voice_assistant": {
+    "enable_voice_assistant": false,
+    "wake_words": [
+      "小蔚",
+      "小蔚小蔚"
+    ],
+    "asr_engine": "speech_recognition_google",
+    "asr_language": "zh-CN",
+    "max_listen_seconds": 2.0,
+    "silence_timeout": 0.5,
+    "response_with_tts": false
   },
   "logging": {
     "level": "INFO",

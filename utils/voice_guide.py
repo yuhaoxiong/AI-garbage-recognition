@@ -8,7 +8,9 @@
 import os
 import logging
 import threading
-from typing import Optional
+import queue
+import time
+from typing import Optional, Dict, Any
 from utils.config_manager import get_config_manager
 
 try:
@@ -52,9 +54,16 @@ class VoiceGuide:
         # TTS引擎
         self.tts_engine = None
         self.tts_lock = threading.Lock()
-        
+
+        # 语音队列机制
+        self.speech_queue = queue.Queue()
+        self.speech_worker_running = False
+        self.speech_worker_thread = None
+
         # 初始化
         self._init_tts()
+        if self.enabled and TTS_AVAILABLE:
+            self._start_speech_worker()
     
     def _init_tts(self):
         """初始化TTS引擎"""
@@ -85,30 +94,130 @@ class VoiceGuide:
     def speak(self, text: str, async_mode: bool = True):
         """
         播放语音
-        
+
         Args:
             text: 要播放的文本
             async_mode: 是否异步播放
         """
         if not self.enabled or not self.tts_engine:
             return
-        
-        if async_mode:
-            # 异步播放
-            threading.Thread(target=self._speak_sync, args=(text,), daemon=True).start()
-        else:
-            # 同步播放
-            self._speak_sync(text)
+
+        try:
+            # 将语音任务添加到队列
+            self.speech_queue.put(text, timeout=1.0)
+            self.logger.debug(f"语音任务已加入队列: {text}")
+        except queue.Full:
+            self.logger.warning("语音队列已满，跳过当前语音")
+        except Exception as e:
+            self.logger.error(f"添加语音任务失败: {e}")
     
     def _speak_sync(self, text: str):
         """同步播放语音"""
         with self.tts_lock:
             try:
+                # 停止之前的语音
+                self.tts_engine.stop()
+
+                # 设置新的语音文本
                 self.tts_engine.say(text)
-                self.tts_engine.runAndWait()
+
+                # 使用try-except包装runAndWait以处理事件循环冲突
+                try:
+                    self.tts_engine.runAndWait()
+                except RuntimeError as re:
+                    if "run loop already started" in str(re):
+                        # 如果事件循环已经启动，使用替代方法
+                        self.logger.warning("TTS事件循环冲突，使用替代播放方式")
+                        import time
+                        time.sleep(len(text) * 0.1)  # 估算播放时间
+                    else:
+                        raise re
+
                 self.logger.debug(f"播放语音: {text}")
             except Exception as e:
                 self.logger.error(f"语音播放失败: {e}")
+                # 尝试重新初始化TTS引擎
+                self._reinit_tts_engine()
+
+    def _reinit_tts_engine(self):
+        """重新初始化TTS引擎"""
+        try:
+            self.logger.info("尝试重新初始化TTS引擎...")
+            if self.tts_engine:
+                try:
+                    self.tts_engine.stop()
+                except:
+                    pass
+
+            # 重新初始化
+            self._init_tts()
+            self.logger.info("TTS引擎重新初始化成功")
+        except Exception as e:
+            self.logger.error(f"TTS引擎重新初始化失败: {e}")
+            self.tts_engine = None
+
+    def _start_speech_worker(self):
+        """启动语音工作器线程"""
+        if self.speech_worker_running:
+            return
+
+        self.speech_worker_running = True
+        self.speech_worker_thread = threading.Thread(target=self._speech_worker, daemon=True)
+        self.speech_worker_thread.start()
+        self.logger.info("语音工作器线程已启动")
+
+    def _speech_worker(self):
+        """语音工作器线程主循环"""
+        while self.speech_worker_running:
+            try:
+                # 从队列获取语音任务
+                text = self.speech_queue.get(timeout=1.0)
+
+                if text and self.tts_engine:
+                    self._speak_sync_safe(text)
+
+                # 标记任务完成
+                self.speech_queue.task_done()
+
+            except queue.Empty:
+                # 队列为空，继续等待
+                continue
+            except Exception as e:
+                self.logger.error(f"语音工作器处理失败: {e}")
+                time.sleep(0.1)
+
+    def _speak_sync_safe(self, text: str):
+        """安全的同步语音播放"""
+        try:
+            with self.tts_lock:
+                # 停止之前的语音
+                try:
+                    self.tts_engine.stop()
+                except:
+                    pass
+
+                # 设置新的语音文本
+                self.tts_engine.say(text)
+
+                # 安全的播放方式
+                try:
+                    self.tts_engine.runAndWait()
+                except RuntimeError as re:
+                    if "run loop already started" in str(re):
+                        # 事件循环冲突，使用估算时间等待
+                        self.logger.debug("TTS事件循环冲突，使用估算等待时间")
+                        estimated_time = len(text) * 0.08  # 估算播放时间
+                        time.sleep(max(1.0, estimated_time))
+                    else:
+                        raise re
+
+                self.logger.debug(f"安全播放语音完成: {text}")
+
+        except Exception as e:
+            self.logger.error(f"安全语音播放失败: {e}")
+            # 尝试重新初始化
+            if "run loop already started" not in str(e):
+                self._reinit_tts_engine()
     
     def speak_guidance(self, waste_category: str, guidance_text: str = None):
         """
@@ -202,11 +311,30 @@ class VoiceGuide:
     
     def stop_all_speech(self):
         """停止所有语音播放"""
-        if self.tts_engine:
-            try:
+        try:
+            # 停止语音工作器
+            self.speech_worker_running = False
+
+            # 清空队列
+            while not self.speech_queue.empty():
+                try:
+                    self.speech_queue.get_nowait()
+                    self.speech_queue.task_done()
+                except queue.Empty:
+                    break
+
+            # 停止TTS引擎
+            if self.tts_engine:
                 self.tts_engine.stop()
-            except Exception as e:
-                self.logger.error(f"停止语音播放失败: {e}")
+
+            # 等待工作器线程结束
+            if self.speech_worker_thread and self.speech_worker_thread.is_alive():
+                self.speech_worker_thread.join(timeout=2.0)
+
+            self.logger.info("所有语音播放已停止")
+
+        except Exception as e:
+            self.logger.error(f"停止语音播放失败: {e}")
 
 
 class AudioPlayer:

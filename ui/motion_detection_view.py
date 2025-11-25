@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCore import QTimer, Qt
-from PySide6.QtGui import QImage, QPixmap
+from PySide6.QtGui import QImage, QPixmap, QFont
 import cv2
 import numpy as np
 
@@ -15,7 +15,9 @@ class MotionDetectionView(QWidget):
         self.image_label.setAlignment(Qt.AlignCenter)
         self.status_label = QLabel("状态：未检测")
         self.status_label.setAlignment(Qt.AlignCenter)
-        self.status_label.setStyleSheet("font-size:18px; color:#333;")
+        # 使用点字号替代 px
+        self.status_label.setFont(QFont("Microsoft YaHei", 12))
+        self.status_label.setStyleSheet("color:#333;")
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.image_label)

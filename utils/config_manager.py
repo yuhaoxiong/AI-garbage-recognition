@@ -9,7 +9,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Union, List
 from dataclasses import dataclass, asdict
 
 
@@ -42,15 +42,33 @@ class AIDetectionConfig:
 @dataclass
 class MotionDetectionConfig:
     """运动检测配置"""
-    enable_motion_detection: bool = False
+    enable_motion_detection: bool = True  # 默认启用运动检测
+    use_smart_detector: bool = True  # 使用智能检测器
     motion_threshold: int = 500
     min_contour_area: int = 1000
     detection_cooldown: float = 3.0
+    recognition_cooldown: float = 5.0
     history: int = 500
     dist2_threshold: float = 400.0
     detect_shadows: bool = True
     blur_kernel_size: int = 5
     kernel_size: int = 3
+    capture_delay: float = 1.0  # 延迟采集时间
+    max_saved_images: int = 10  # 最大保存图片数量
+
+    # 智能检测器专用配置
+    roi_enabled: bool = True  # 启用ROI区域
+    roi_top_ratio: float = 0.2  # ROI上边界比例
+    roi_bottom_ratio: float = 0.8  # ROI下边界比例
+    roi_left_ratio: float = 0.1  # ROI左边界比例
+    roi_right_ratio: float = 0.9  # ROI右边界比例
+    stability_threshold: float = 50  # 稳定性阈值
+    min_stability_duration: float = 0.5  # 最小稳定时间
+    max_stability_duration: float = 4.0  # 最大稳定时间
+    min_presence_area: int = 3000  # 最小存在面积
+    center_movement_threshold: float = 30  # 中心移动阈值
+    min_presence_duration: float = 0.8  # 最小存在时间
+    background_change_threshold: float = 0.1  # 背景变化阈值
 
 
 @dataclass
@@ -86,6 +104,32 @@ class AudioConfig:
     voice_language: str = "zh"
     volume: float = 0.8
     speech_rate: int = 150
+
+
+@dataclass
+class LLMConfig:
+    """大模型对话配置"""
+    api_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+    api_key: str = ""
+    model_name: str = "qwen-plus"
+    max_retries: int = 3
+    timeout: int = 30
+
+
+@dataclass
+class VoiceAssistantConfig:
+    """语音助手配置"""
+    enable_voice_assistant: bool = False
+    wake_words: List[str] = None
+    asr_engine: str = "speech_recognition_google"  # speech_recognition_google / offline_vosk
+    asr_language: str = "zh-CN"
+    max_listen_seconds: float = 6.0
+    silence_timeout: float = 1.0
+    response_with_tts: bool = True
+
+    def __post_init__(self):
+        if self.wake_words is None:
+            self.wake_words = ["小蔚", "小蔚小蔚", "小卫"]
 
 
 @dataclass
@@ -165,6 +209,8 @@ class ConfigManager:
         self._api_config: Optional[APIConfig] = None
         self._ui_config: Optional[UIConfig] = None
         self._audio_config: Optional[AudioConfig] = None
+        self._llm_config: Optional[LLMConfig] = None
+        self._voice_assistant_config: Optional[VoiceAssistantConfig] = None
         self._io_control_config: Optional[IOControlConfig] = None
         self._animation_config: Optional[AnimationConfig] = None
         self._logging_config: Optional[LoggingConfig] = None
@@ -255,6 +301,8 @@ class ConfigManager:
             self._api_config = APIConfig(**self._system_config.get('api', {}))
             self._ui_config = UIConfig(**self._system_config.get('ui', {}))
             self._audio_config = AudioConfig(**self._system_config.get('audio', {}))
+            self._llm_config = LLMConfig(**self._system_config.get('llm', {}))
+            self._voice_assistant_config = VoiceAssistantConfig(**self._system_config.get('voice_assistant', {}))
             self._io_control_config = IOControlConfig(**self._system_config.get('io_control', {}))
             self._animation_config = AnimationConfig(**self._system_config.get('animation', {}))
             self._logging_config = LoggingConfig(**self._system_config.get('logging', {}))
@@ -282,6 +330,8 @@ class ConfigManager:
         self._api_config = APIConfig()
         self._ui_config = UIConfig()
         self._audio_config = AudioConfig()
+        self._llm_config = LLMConfig()
+        self._voice_assistant_config = VoiceAssistantConfig()
         self._io_control_config = IOControlConfig()
         self._animation_config = AnimationConfig()
         self._logging_config = LoggingConfig()
@@ -297,6 +347,8 @@ class ConfigManager:
             "api": asdict(APIConfig()),
             "ui": asdict(UIConfig()),
             "audio": asdict(AudioConfig()),
+            "llm": asdict(LLMConfig()),
+            "voice_assistant": asdict(VoiceAssistantConfig()),
             "io_control": asdict(IOControlConfig()),
             "animation": asdict(AnimationConfig()),
             "logging": asdict(LoggingConfig()),
@@ -407,6 +459,14 @@ class ConfigManager:
         """获取音频配置"""
         return self._audio_config or AudioConfig()
     
+    def get_llm_config(self) -> LLMConfig:
+        """获取LLM配置"""
+        return self._llm_config or LLMConfig()
+
+    def get_voice_assistant_config(self) -> VoiceAssistantConfig:
+        """获取语音助手配置"""
+        return self._voice_assistant_config or VoiceAssistantConfig()
+
     def get_io_config(self) -> IOControlConfig:
         """获取IO控制配置"""
         return self._io_control_config or IOControlConfig()
@@ -430,6 +490,19 @@ class ConfigManager:
     def get_waste_categories(self) -> Dict[str, Any]:
         """获取垃圾分类"""
         return self._waste_config.get('waste_categories', {})
+
+    def get_waste_category_info(self, category: str) -> Optional[Dict[str, Any]]:
+        """
+        获取特定垃圾分类的信息
+
+        Args:
+            category: 垃圾分类名称（如：可回收物、有害垃圾等）
+
+        Returns:
+            分类信息字典，包含color、icon、description、items、guidance等
+        """
+        waste_categories = self.get_waste_categories()
+        return waste_categories.get(category, None)
     
     def get_ai_model_config(self) -> Dict[str, Any]:
         """获取AI模型配置"""
@@ -437,52 +510,133 @@ class ConfigManager:
     
     def update_config(self, config_type: str, key: str, value: Any) -> bool:
         """
-        更新配置
-        
+        更新配置 - 优化版本
+
         Args:
             config_type: 配置类型 ('system' 或 'waste')
             key: 配置键 (支持点分隔的嵌套键，如 'camera.fps')
             value: 配置值
-            
+
         Returns:
             bool: 更新是否成功
         """
+        # 输入验证
+        if not isinstance(config_type, str) or config_type not in ['system', 'waste']:
+            self.logger.error(f"无效的配置类型: {config_type}")
+            return False
+
+        if not isinstance(key, str) or not key.strip():
+            self.logger.error("配置键不能为空")
+            return False
+
         try:
-            if config_type == 'system':
-                config = self._system_config
-            elif config_type == 'waste':
-                config = self._waste_config
-            else:
-                self.logger.error(f"未知的配置类型: {config_type}")
+            # 获取配置对象
+            config = self._system_config if config_type == 'system' else self._waste_config
+
+            # 备份原始值
+            original_value = self._get_nested_value(config, key)
+
+            # 验证新值
+            if not self._validate_config_value(config_type, key, value):
+                self.logger.error(f"配置值验证失败: {key} = {value}")
                 return False
-            
+
             # 处理嵌套键
             keys = key.split('.')
             current = config
-            
+
             # 导航到目标位置
             for k in keys[:-1]:
                 if k not in current:
                     current[k] = {}
+                elif not isinstance(current[k], dict):
+                    self.logger.error(f"配置路径冲突: {k} 不是字典类型")
+                    return False
                 current = current[k]
-            
+
             # 设置值
             current[keys[-1]] = value
-            
+
             # 保存配置
-            if config_type == 'system':
-                self._save_system_config()
-                # 重新解析配置对象
-                self._parse_config_objects()
-            else:
-                self._save_waste_config()
-            
-            self.logger.info(f"配置更新成功: {config_type}.{key} = {value}")
-            return True
-            
+            try:
+                if config_type == 'system':
+                    self._save_system_config()
+                    # 重新解析配置对象
+                    self._parse_config_objects()
+                else:
+                    self._save_waste_config()
+
+                self.logger.info(f"配置更新成功: {config_type}.{key} = {value}")
+                return True
+
+            except Exception as save_error:
+                # 恢复原始值
+                if original_value is not None:
+                    current[keys[-1]] = original_value
+                self.logger.error(f"保存配置失败，已恢复原值: {save_error}")
+                return False
+
         except Exception as e:
             self.logger.error(f"更新配置失败: {e}")
             return False
+
+    def _get_nested_value(self, config: dict, key: str) -> Any:
+        """获取嵌套配置值"""
+        try:
+            keys = key.split('.')
+            current = config
+            for k in keys:
+                if isinstance(current, dict) and k in current:
+                    current = current[k]
+                else:
+                    return None
+            return current
+        except Exception:
+            return None
+
+    def _validate_config_value(self, config_type: str, key: str, value: Any) -> bool:
+        """验证配置值的有效性"""
+        try:
+            # 基本类型检查
+            if value is None:
+                return False
+
+            # 特定配置项的验证
+            if config_type == 'system':
+                if key.startswith('camera.'):
+                    return self._validate_camera_config(key, value)
+                elif key.startswith('ai_detection.'):
+                    return self._validate_ai_config(key, value)
+                elif key.startswith('performance.'):
+                    return self._validate_performance_config(key, value)
+
+            return True
+
+        except Exception as e:
+            self.logger.error(f"配置验证异常: {e}")
+            return False
+
+    def _validate_camera_config(self, key: str, value: Any) -> bool:
+        """验证摄像头配置"""
+        if key == 'camera.fps' and (not isinstance(value, (int, float)) or value <= 0):
+            return False
+        if key == 'camera.device_id' and (not isinstance(value, int) or value < 0):
+            return False
+        return True
+
+    def _validate_ai_config(self, key: str, value: Any) -> bool:
+        """验证AI配置"""
+        if key.endswith('_threshold') and (not isinstance(value, (int, float)) or not 0 <= value <= 1):
+            return False
+        return True
+
+    def _validate_performance_config(self, key: str, value: Any) -> bool:
+        """验证性能配置"""
+        if key == 'performance.max_fps' and (not isinstance(value, (int, float)) or value <= 0):
+            return False
+        if key == 'performance.memory_limit_mb' and (not isinstance(value, int) or value <= 0):
+            return False
+        return True
     
     def validate_config(self) -> bool:
         """

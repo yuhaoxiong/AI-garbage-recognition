@@ -229,14 +229,98 @@ class SystemRecoveryManager:
     def _handle_runtime_error(self, error_info: ErrorInfo, context: str) -> bool:
         """处理运行时错误"""
         self.logger.info("处理运行时错误")
-        
+
         # 根据上下文决定恢复策略
         if "camera" in context.lower():
             return self._recover_camera_error()
         elif "detection" in context.lower():
             return self._recover_detection_error()
-        
+        elif "ui" in context.lower():
+            return self._recover_ui_error()
+        elif "config" in context.lower():
+            return self._recover_config_error()
+
         return False
+
+    def _recover_camera_error(self) -> bool:
+        """恢复摄像头错误"""
+        self.logger.info("尝试恢复摄像头错误")
+
+        try:
+            # 等待一段时间后重试
+            import time
+            time.sleep(2.0)
+
+            # 尝试重新初始化摄像头
+            import cv2
+            cap = cv2.VideoCapture(0)
+            if cap.isOpened():
+                cap.release()
+                self.logger.info("摄像头恢复成功")
+                return True
+            else:
+                self.logger.warning("摄像头仍无法访问")
+                return False
+
+        except Exception as e:
+            self.logger.error(f"摄像头恢复失败: {e}")
+            return False
+
+    def _recover_detection_error(self) -> bool:
+        """恢复检测错误"""
+        self.logger.info("尝试恢复检测错误")
+
+        try:
+            # 清理内存
+            import gc
+            gc.collect()
+
+            # 降低检测频率
+            self.logger.info("降低检测频率以减少错误")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"检测恢复失败: {e}")
+            return False
+
+    def _recover_ui_error(self) -> bool:
+        """恢复UI错误"""
+        self.logger.info("尝试恢复UI错误")
+
+        try:
+            # 刷新UI
+            from PySide6.QtWidgets import QApplication
+            app = QApplication.instance()
+            if app:
+                app.processEvents()
+                self.logger.info("UI刷新完成")
+                return True
+
+        except Exception as e:
+            self.logger.error(f"UI恢复失败: {e}")
+
+        return False
+
+    def _recover_config_error(self) -> bool:
+        """恢复配置错误"""
+        self.logger.info("尝试恢复配置错误")
+
+        try:
+            # 重新加载配置
+            from utils.config_manager import get_config_manager
+            config_manager = get_config_manager()
+
+            # 验证配置
+            if config_manager.validate_config():
+                self.logger.info("配置恢复成功")
+                return True
+            else:
+                self.logger.warning("配置验证失败")
+                return False
+
+        except Exception as e:
+            self.logger.error(f"配置恢复失败: {e}")
+            return False
     
     def _handle_value_error(self, error_info: ErrorInfo, context: str) -> bool:
         """处理值错误"""

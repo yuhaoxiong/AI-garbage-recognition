@@ -1,0 +1,314 @@
+{
+  "templates": {
+    "zh": {
+      "welcome": {
+        "formal": [
+          {
+            "text": "欢迎使用智能垃圾分类系统，请将废弃物放在检测区域",
+            "variables": []
+          },
+          {
+            "text": "您好，这里是智能垃圾分类指导系统，请按照提示操作",
+            "variables": []
+          }
+        ],
+        "friendly": [
+          {
+            "text": "您好！我是您的垃圾分类小助手，让我们一起保护环境吧",
+            "variables": []
+          },
+          {
+            "text": "欢迎来到智能分类世界！请把垃圾放到检测区域，我来帮您识别",
+            "variables": []
+          }
+        ],
+        "encouraging": [
+          {
+            "text": "太好了！又有一位环保达人来了，让我们开始垃圾分类之旅吧",
+            "variables": []
+          },
+          {
+            "text": "欢迎您！每一次正确分类都是对地球的贡献，加油",
+            "variables": []
+          }
+        ]
+      },
+      "detection_start": {
+        "formal": [
+          {
+            "text": "检测到物体，正在分析中，请稍候",
+            "variables": []
+          },
+          {
+            "text": "系统正在识别中，请保持物品稳定",
+            "variables": []
+          }
+        ],
+        "friendly": [
+          {
+            "text": "发现新物品！让我看看这是什么",
+            "variables": []
+          },
+          {
+            "text": "哇，有东西来了！正在仔细观察中",
+            "variables": []
+          }
+        ],
+        "encouraging": [
+          {
+            "text": "很好！检测到物品，马上为您识别",
+            "variables": []
+          },
+          {
+            "text": "太棒了！物品已进入检测区域，开始分析",
+            "variables": []
+          }
+        ]
+      },
+      "detection_progress": {
+        "formal": [
+          {
+            "text": "正在识别中，请保持物品稳定",
+            "variables": []
+          },
+          {
+            "text": "分析进行中，请稍等片刻",
+            "variables": []
+          }
+        ],
+        "friendly": [
+          {
+            "text": "马上就好，请稍等片刻",
+            "variables": []
+          },
+          {
+            "text": "正在努力识别中，请耐心等待",
+            "variables": []
+          }
+        ],
+        "encouraging": [
+          {
+            "text": "快要识别出来了，请再等一下",
+            "variables": []
+          },
+          {
+            "text": "正在仔细分析，马上就有结果了",
+            "variables": []
+          }
+        ]
+      },
+      "detection_success": {
+        "formal": [
+          {
+            "text": "识别完成，这是{category}",
+            "variables": ["category"]
+          },
+          {
+            "text": "分析结果：{category}",
+            "variables": ["category"]
+          }
+        ],
+        "friendly": [
+          {
+            "text": "太棒了！我认出这是{category}",
+            "variables": ["category"]
+          },
+          {
+            "text": "哈哈，我知道了！这是{category}",
+            "variables": ["category"]
+          }
+        ],
+        "encouraging": [
+          {
+            "text": "成功识别！这是{category}，您做得很好",
+            "variables": ["category"]
+          },
+          {
+            "text": "太厉害了！识别出{category}，继续加油",
+            "variables": ["category"]
+          }
+        ]
+      },
+      "detection_failed": {
+        "formal": [
+          {
+            "text": "抱歉，无法识别此物品，请咨询工作人员",
+            "variables": []
+          },
+          {
+            "text": "识别失败，建议寻求人工帮助",
+            "variables": []
+          }
+        ],
+        "friendly": [
+          {
+            "text": "这个有点难倒我了，建议询问现场工作人员",
+            "variables": []
+          },
+          {
+            "text": "哎呀，这个我还没学会，请找工作人员帮忙",
+            "variables": []
+          }
+        ],
+        "encouraging": [
+          {
+            "text": "没关系，这个比较特殊，请咨询工作人员，您已经做得很好了",
+            "variables": []
+          },
+          {
+            "text": "不要紧，有些物品确实比较难识别，请寻求帮助",
+            "variables": []
+          }
+        ]
+      },
+      "guidance": {
+        "formal": [
+          {
+            "text": "请将{category}投放到{bin_color}垃圾桶",
+            "variables": ["category", "bin_color"]
+          },
+          {
+            "text": "{category}应投放至{bin_color}垃圾桶",
+            "variables": ["category", "bin_color"]
+          }
+        ],
+        "friendly": [
+          {
+            "text": "{category}应该放入{bin_color}垃圾桶哦",
+            "variables": ["category", "bin_color"]
+          },
+          {
+            "text": "这个{category}的家在{bin_color}垃圾桶里",
+            "variables": ["category", "bin_color"]
+          }
+        ],
+        "encouraging": [
+          {
+            "text": "很好！{category}请投放到{bin_color}垃圾桶，您真棒",
+            "variables": ["category", "bin_color"]
+          },
+          {
+            "text": "太好了！{category}属于{bin_color}垃圾桶，继续保持",
+            "variables": ["category", "bin_color"]
+          }
+        ]
+      },
+      "thank_you": {
+        "formal": [
+          {
+            "text": "谢谢您的配合，垃圾分类从我做起",
+            "variables": []
+          },
+          {
+            "text": "感谢您的参与，共建美好环境",
+            "variables": []
+          }
+        ],
+        "friendly": [
+          {
+            "text": "谢谢您！分类做得真不错",
+            "variables": []
+          },
+          {
+            "text": "太好了！感谢您的环保行动",
+            "variables": []
+          }
+        ],
+        "encouraging": [
+          {
+            "text": "做得很好！您为环保做出了贡献",
+            "variables": []
+          },
+          {
+            "text": "太棒了！您是真正的环保达人",
+            "variables": []
+          }
+        ]
+      },
+      "error": {
+        "formal": [
+          {
+            "text": "系统出现错误，请稍后重试",
+            "variables": []
+          },
+          {
+            "text": "检测异常，请重新操作",
+            "variables": []
+          }
+        ],
+        "friendly": [
+          {
+            "text": "哎呀，出了点小问题，请重新尝试",
+            "variables": []
+          },
+          {
+            "text": "不好意思，系统有点小状况，请再试一次",
+            "variables": []
+          }
+        ],
+        "encouraging": [
+          {
+            "text": "没关系，偶尔会有小问题，请重新尝试，您很棒",
+            "variables": []
+          },
+          {
+            "text": "不要担心，技术问题而已，请再试一次",
+            "variables": []
+          }
+        ]
+      },
+      "maintenance": {
+        "formal": [
+          {
+            "text": "系统正在维护中，请稍后使用",
+            "variables": []
+          }
+        ],
+        "friendly": [
+          {
+            "text": "系统正在休息中，请稍后再来",
+            "variables": []
+          }
+        ],
+        "encouraging": [
+          {
+            "text": "系统正在升级中，很快就会更好地为您服务",
+            "variables": []
+          }
+        ]
+      }
+    }
+  },
+  "waste_categories": {
+    "可回收物": {
+      "bin_color": "蓝色",
+      "guidance": "请清洗干净后投放到蓝色可回收物垃圾桶",
+      "encouragement": "很好！回收利用能减少资源浪费"
+    },
+    "有害垃圾": {
+      "bin_color": "红色",
+      "guidance": "请小心投放到红色有害垃圾桶，避免破损",
+      "encouragement": "谢谢您的细心处理，保护环境人人有责"
+    },
+    "湿垃圾": {
+      "bin_color": "棕色",
+      "guidance": "请沥干水分后投放到棕色湿垃圾桶",
+      "encouragement": "湿垃圾可以变成有机肥料，真是太棒了"
+    },
+    "干垃圾": {
+      "bin_color": "黑色",
+      "guidance": "请投放到黑色干垃圾桶",
+      "encouragement": "正确分类让垃圾处理更高效"
+    },
+    "厨余垃圾": {
+      "bin_color": "绿色",
+      "guidance": "请投放到绿色厨余垃圾桶",
+      "encouragement": "厨余垃圾分类有助于资源循环利用"
+    },
+    "其他垃圾": {
+      "bin_color": "灰色",
+      "guidance": "请投放到灰色其他垃圾桶",
+      "encouragement": "虽然是其他垃圾，分类意识很重要"
+    }
+  }
+}

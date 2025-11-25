@@ -6,6 +6,7 @@
 """
 
 import os
+import logging
 from typing import List, Optional, Dict, Any
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                               QPushButton, QFrame, QScrollArea, QGridLayout,
@@ -279,10 +280,47 @@ class DetectionResultWidget(QFrame):
             border-radius: 5px;
             border-left: 4px solid #3498db;
         """)
-        
+
+        # 检查是否有额外的API信息
+        extra_info_layout = None
+        if hasattr(result, 'detection_method') and result.detection_method == 'API调用':
+            extra_info_layout = QVBoxLayout()
+
+            # 检测方法标签
+            method_label = QLabel("🔗 API智能识别")
+            method_label.setFont(QFont("Microsoft YaHei", 10, QFont.Bold))
+            method_label.setStyleSheet("""
+                color: #e74c3c;
+                background-color: rgba(231, 76, 60, 0.1);
+                padding: 4px 8px;
+                border-radius: 4px;
+                border: 1px solid rgba(231, 76, 60, 0.3);
+            """)
+            extra_info_layout.addWidget(method_label)
+
+            # 时间戳信息
+            if hasattr(result, 'timestamp') and result.timestamp:
+                timestamp_label = QLabel(f"⏰ 识别时间: {result.timestamp}")
+                timestamp_label.setFont(QFont("Microsoft YaHei", 9))
+                timestamp_label.setStyleSheet("color: #7f8c8d; padding: 2px;")
+                extra_info_layout.addWidget(timestamp_label)
+
+            # 图片路径信息
+            if hasattr(result, 'image_path') and result.image_path:
+                import os
+                image_name = os.path.basename(result.image_path)
+                image_label = QLabel(f"📷 图片: {image_name}")
+                image_label.setFont(QFont("Microsoft YaHei", 9))
+                image_label.setStyleSheet("color: #7f8c8d; padding: 2px;")
+                extra_info_layout.addWidget(image_label)
+
         item_layout.addLayout(title_layout)
         item_layout.addWidget(confidence_bar)
         item_layout.addWidget(guidance_label)
+
+        # 添加额外信息（如果有）
+        if extra_info_layout:
+            item_layout.addLayout(extra_info_layout)
         
         # 设置样式
         item_frame.setStyleSheet(f"""
@@ -303,16 +341,30 @@ class GuidanceWidget(QWidget):
     # 信号定义
     voice_toggle_clicked = Signal(bool)  # 语音切换信号
     
-    def __init__(self):
-        """初始化指导界面"""
+    def __init__(self, voice_guide=None):
+        """初始化指导界面
+        
+        Args:
+            voice_guide: 语音指导实例，如果为None则创建新实例
+        """
         super().__init__()
-        
+
+        # 初始化日志记录器
+        self.logger = logging.getLogger(__name__)
+
         self.config_manager = get_config_manager()
-        self.voice_guide = get_voice_guide()
         
+        # 使用传入的语音实例或创建新实例
+        if voice_guide is not None:
+            self.voice_guide = voice_guide
+            self.logger.info("使用传入的语音指导实例")
+        else:
+            self.voice_guide = get_voice_guide()
+            self.logger.info("创建新的语音指导实例")
+
         # 分类卡片
         self.category_cards = {}
-        
+
         # 定时器
         self.clear_timer = QTimer()
         self.clear_timer.setSingleShot(True)
@@ -321,8 +373,7 @@ class GuidanceWidget(QWidget):
         self._setup_ui()
         self._load_categories()
         
-        # 播放欢迎语音
-        QTimer.singleShot(1000, self.voice_guide.speak_welcome)
+        # 不在这里播放欢迎语音，由主窗口统一管理
     
     def _setup_ui(self):
         """设置UI"""
@@ -457,71 +508,94 @@ class GuidanceWidget(QWidget):
         try:
             # 处理不同格式的检测结果
             if isinstance(result, dict):
-                # 运动检测结果格式
-                if 'detection_method' in result and result['detection_method'] == 'motion_detection':
+                # API调用结果格式
+                if 'detection_method' in result and result['detection_method'] == 'API调用':
                     category = result.get('category', '未知')
                     confidence = result.get('confidence', 0.0)
                     description = result.get('description', '')
                     image_path = result.get('image_path', '')
-                    
+                    timestamp = result.get('timestamp', '')
+
+                    # 创建API检测结果对象
+                    api_detection_result = WasteDetectionResult(
+                        class_name=f"api_{category.lower()}",
+                        waste_category=category,
+                        confidence=confidence,
+                        bbox=[0, 0, 100, 100],  # API检测没有具体边界框
+                        guidance=f"API识别结果: {description}",
+                        color=self._get_category_color(category)
+                    )
+
+                    # 添加额外信息
+                    api_detection_result.detection_method = 'API调用'
+                    api_detection_result.timestamp = timestamp
+                    api_detection_result.image_path = image_path
+
+                    # 更新显示
+                    self._update_result_display([api_detection_result])
+
+                    # 显示API调用信息
+                    if image_path:
+                        self.logger.info(f"API识别图片: {image_path}")
+                    if timestamp:
+                        self.logger.info(f"API识别时间: {timestamp}")
+
+                # 运动检测结果格式
+                elif 'detection_method' in result and result['detection_method'] == 'motion_detection':
+                    category = result.get('category', '未知')
+                    confidence = result.get('confidence', 0.0)
+                    description = result.get('description', '')
+                    image_path = result.get('image_path', '')
+
                     # 创建检测结果对象
                     detection_result = WasteDetectionResult(
-                        category=category,
+                        class_name=f"motion_{category.lower()}",
+                        waste_category=category,
                         confidence=confidence,
                         bbox=[0, 0, 100, 100],  # 运动检测没有具体边界框
-                        description=description
+                        guidance=f"运动检测结果: {description}",
+                        color=self._get_category_color(category)
                     )
-                    
+
                     # 更新显示
                     self._update_result_display([detection_result])
-                    
+
                     # 显示捕获的图片路径
                     if image_path:
                         self.logger.info(f"运动检测图片: {image_path}")
-                    
+
                 else:
                     # RKNN检测结果格式
                     self._update_result_display(result)
             else:
                 # 直接传递结果列表
                 self._update_result_display(result)
-                
+
         except Exception as e:
             self.logger.error(f"更新检测结果失败: {e}")
+
+    def _get_category_color(self, category: str) -> str:
+        """根据分类获取颜色"""
+        color_map = {
+            '可回收物': '#0080ff',
+            '有害垃圾': '#ff4444',
+            '湿垃圾': '#00cc66',
+            '干垃圾': '#888888',
+            '未知': '#cccccc'
+        }
+        return color_map.get(category, '#cccccc')
     
     def _update_result_display(self, results):
         """更新结果显示"""
         if not results:
-            self.result_widget.clear_results()
+            self.detection_result_widget.update_results([])
             return
-        
-        # 清空之前的结果
-        self.result_widget.clear_results()
-        
-        # 添加新结果
-        for result in results:
-            if hasattr(result, 'category'):
-                # WasteDetectionResult对象
-                self.result_widget.add_result(
-                    category=result.category,
-                    confidence=result.confidence,
-                    description=result.description
-                )
-            elif isinstance(result, dict):
-                # 字典格式
-                self.result_widget.add_result(
-                    category=result.get('category', '未知'),
-                    confidence=result.get('confidence', 0.0),
-                    description=result.get('description', '')
-                )
-        
-        # 播放语音指导
-        if results and hasattr(self, 'voice_guide') and self.voice_guide:
-            if hasattr(results[0], 'category'):
-                category = results[0].category
-            else:
-                category = results[0].get('category', '未知')
-            self.voice_guide.speak_guidance(category)
+
+        # 直接使用DetectionResultWidget的update_results方法
+        self.detection_result_widget.update_results(results)
+
+        # 不在这里播放语音指导，由主窗口的语音管理器统一处理
+        # 避免重复播放语音
     
     def _play_detection_guidance(self, results: List[WasteDetectionResult]):
         """播放检测指导语音"""
