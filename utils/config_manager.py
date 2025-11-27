@@ -104,6 +104,7 @@ class AudioConfig:
     voice_language: str = "zh"
     volume: float = 0.8
     speech_rate: int = 150
+    serial_voice: Dict[str, Any] = None
 
 
 @dataclass

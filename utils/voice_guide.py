@@ -12,6 +12,7 @@ import queue
 import time
 from typing import Optional, Dict, Any
 from utils.config_manager import get_config_manager
+from utils.serial_voice_engine import SerialVoiceEngine
 
 try:
     import pyttsx3
@@ -59,38 +60,55 @@ class VoiceGuide:
         self.speech_queue = queue.Queue()
         self.speech_worker_running = False
         self.speech_worker_thread = None
-
         # 初始化
         self._init_tts()
-        if self.enabled and TTS_AVAILABLE:
+        if self.enabled:
             self._start_speech_worker()
     
     def _init_tts(self):
         """初始化TTS引擎"""
-        if not self.enabled or not TTS_AVAILABLE:
-            self.logger.info("语音功能已禁用或TTS库不可用")
+        if not self.enabled:
+            self.logger.info("语音功能已禁用")
+            return
+            
+        # 检查是否启用串口语音
+        try:
+            audio_config = self.config_manager.get_audio_config()
+            # 检查配置中是否有 serial_voice 且 enable 为 True
+            serial_config = getattr(audio_config, 'serial_voice', None)
+            
+            if serial_config and (isinstance(serial_config, dict) and serial_config.get('enable')):
+                self.logger.info("正在初始化串口语音引擎...")
+                config_dict = serial_config if isinstance(serial_config, dict) else serial_config.__dict__
+                self.tts_engine = SerialVoiceEngine(config_dict)
+                if self.tts_engine.initialize():
+                    self.logger.info("串口语音引擎初始化成功")
+                    return
+                else:
+                    self.logger.warning("串口语音引擎初始化失败，尝试回退到本地TTS")
+        except Exception as e:
+            self.logger.error(f"检查串口语音配置时出错: {e}")
+
+        if not TTS_AVAILABLE:
+            self.logger.info("TTS库不可用")
             return
         
         try:
             self.tts_engine = pyttsx3.init()
-            
-            # 设置语音属性
             self.tts_engine.setProperty('rate', self.rate)
             self.tts_engine.setProperty('volume', self.volume)
             
-            # 设置中文语音（如果可用）
             voices = self.tts_engine.getProperty('voices')
             for voice in voices:
                 if 'chinese' in voice.name.lower() or 'zh' in voice.id.lower():
                     self.tts_engine.setProperty('voice', voice.id)
                     break
             
-            self.logger.info("TTS引擎初始化成功")
-            
+            self.logger.info("本地TTS引擎初始化成功")
         except Exception as e:
             self.logger.error(f"TTS引擎初始化失败: {e}")
             self.tts_engine = None
-    
+
     def speak(self, text: str, async_mode: bool = True):
         """
         播放语音

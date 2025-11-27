@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from utils.config_manager import get_config_manager
 from utils.voice_content_manager import get_voice_content_manager, VoiceContext, VoiceStyle
 from utils.voice_engine_base import BaseVoiceEngine
+from utils.serial_voice_engine import SerialVoiceEngine
 
 # Linux TTS引擎支持
 if sys.platform.startswith('linux'):
@@ -117,6 +118,7 @@ class VoiceEngineType(Enum):
     ESPEAK_NG = "espeak_ng"
     FESTIVAL = "festival"
     EKHO = "ekho"
+    SERIAL = "serial"
 
 
 @dataclass
@@ -599,6 +601,38 @@ class EnhancedVoiceGuide(QObject):
             'speech_rate': self.rate,
             'language': self.language
         }
+
+        # 1. 优先检查串口语音配置
+        try:
+            audio_config = self.config_manager.get_audio_config()
+            serial_config = getattr(audio_config, 'serial_voice', None)
+            
+            # 兼容字典配置
+            if not serial_config:
+                system_config = getattr(self.config_manager, 'config', {})
+                if not system_config:
+                    system_config = getattr(self.config_manager, '_system_config', {})
+                
+                audio_dict = system_config.get('audio', {})
+                serial_dict = audio_dict.get('serial_voice', {})
+                if serial_dict.get('enable'):
+                    serial_config = serial_dict
+
+            if serial_config and (isinstance(serial_config, dict) and serial_config.get('enable') or getattr(serial_config, 'enable', False)):
+                try:
+                    config_dict = serial_config if isinstance(serial_config, dict) else serial_config.__dict__
+                    serial_engine = SerialVoiceEngine(config_dict)
+                    if serial_engine.initialize():
+                        self.engines[VoiceEngineType.SERIAL] = serial_engine
+                        self.current_engine = VoiceEngineType.SERIAL
+                        self.logger.info("使用串口语音引擎 (优先级最高)")
+                        # 如果串口语音启用且成功，可以跳过其他引擎初始化，或者作为备用
+                        # 这里我们将其加入优先级列表的最前面
+                        self.engine_priority.insert(0, VoiceEngineType.SERIAL)
+                except Exception as e:
+                    self.logger.error(f"初始化串口语音引擎失败: {e}")
+        except Exception as e:
+            self.logger.error(f"检查串口语音配置失败: {e}")
 
         # 在Linux系统上，优先初始化Linux TTS管理器
         if sys.platform.startswith('linux') and LINUX_TTS_AVAILABLE:

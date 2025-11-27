@@ -9,6 +9,19 @@
     "auto_focus": true,
     "exposure": -1
   },
+  "audio": {
+    "enable_voice": true,
+    "voice_language": "zh",
+    "volume": 0.8,
+    "speech_rate": 150,
+    "serial_voice": {
+      "enable": true,
+      "port": "/dev/ttyS3",
+      "baudrate": 9600,
+      "encoding": "gb2312",
+      "timeout": 1.0
+    }
+  },
   "ai_detection": {
     "model_path": "models/waste_detection.rknn",
     "input_size": 640,
@@ -58,22 +71,6 @@
       "width": 1024,
       "height": 768
     },
-    "theme": "modern",
-    "language": "zh_CN",
-    "auto_hide_guidance": true,
-    "guidance_display_time": 5000
-  },
-  "audio": {
-    "enable_voice": true,
-    "voice_language": "zh",
-    "volume": 0.8,
-    "speech_rate": 200
-  },
-  "llm": {
-    "api_url": "",
-    "api_key": "",
-    "model_name": "",
-    "max_retries": 1,
     "timeout": 5
   },
   "voice_assistant": {

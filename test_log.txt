@@ -1,0 +1,45 @@
+test_initialization_with_serial_voice (tests.test_enhanced_voice_integration.TestEnhancedVoiceIntegration.test_initialization_with_serial_voice)
+Test that EnhancedVoiceGuide initializes SerialVoiceEngine when configured ... ERROR
+test_speak_uses_serial_engine (tests.test_enhanced_voice_integration.TestEnhancedVoiceIntegration.test_speak_uses_serial_engine)
+Test that speak method uses the SerialVoiceEngine ... ERROR
+
+======================================================================
+ERROR: test_initialization_with_serial_voice (tests.test_enhanced_voice_integration.TestEnhancedVoiceIntegration.test_initialization_with_serial_voice)
+Test that EnhancedVoiceGuide initializes SerialVoiceEngine when configured
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\01_work\02_program\废弃物AI识别指导投放项目\tests\test_enhanced_voice_integration.py", line 46, in setUp
+    self.linux_tts_patcher.start()
+  File "C:\Users\27600\AppData\Local\Programs\Python\Python312\Lib\unittest\mock.py", line 1624, in start
+    result = self.__enter__()
+             ^^^^^^^^^^^^^^^^
+  File "C:\Users\27600\AppData\Local\Programs\Python\Python312\Lib\unittest\mock.py", line 1467, in __enter__
+    original, local = self.get_original()
+                      ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\27600\AppData\Local\Programs\Python\Python312\Lib\unittest\mock.py", line 1437, in get_original
+    raise AttributeError(
+AttributeError: <module 'utils.enhanced_voice_guide' from 'C:\\01_work\\02_program\\废弃物AI识别指导投放项目\\utils\\enhanced_voice_guide.py'> does not have the attribute 'LinuxTTSManager'
+
+======================================================================
+ERROR: test_speak_uses_serial_engine (tests.test_enhanced_voice_integration.TestEnhancedVoiceIntegration.test_speak_uses_serial_engine)
+Test that speak method uses the SerialVoiceEngine
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\01_work\02_program\废弃物AI识别指导投放项目\tests\test_enhanced_voice_integration.py", line 46, in setUp
+    self.linux_tts_patcher.start()
+  File "C:\Users\27600\AppData\Local\Programs\Python\Python312\Lib\unittest\mock.py", line 1624, in start
+    result = self.__enter__()
+             ^^^^^^^^^^^^^^^^
+  File "C:\Users\27600\AppData\Local\Programs\Python\Python312\Lib\unittest\mock.py", line 1467, in __enter__
+    original, local = self.get_original()
+                      ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\27600\AppData\Local\Programs\Python\Python312\Lib\unittest\mock.py", line 1437, in get_original
+    raise AttributeError(
+AttributeError: <module 'utils.enhanced_voice_guide' from 'C:\\01_work\\02_program\\废弃物AI识别指导投放项目\\utils\\enhanced_voice_guide.py'> does not have the attribute 'LinuxTTSManager'
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.003s
+
+FAILED (errors=2)
+pygame 2.6.1 (SDL 2.28.4, Python 3.12.8)
+Hello from the pygame community. https://www.pygame.org/contribute.html
