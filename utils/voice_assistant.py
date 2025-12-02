@@ -105,7 +105,49 @@ class VoiceAssistantWorker(QObject):
     def _wait_for_wake_word(self) -> bool:
         """持续用ASR低功耗监听短语，遇到唤醒词则返回True。"""
         self.status_changed.emit("等待唤醒词：" + "/".join(self.wake_words))
-        if self.asr_engine.startswith("speech_recognition") and self._sr_available:
+        
+        if self.asr_engine == "offline_vosk" and self._vosk_available:
+            try:
+                import vosk
+                import sounddevice as sd
+                import json
+                
+                model_path = "models/vosk-model-small-cn-0.22"
+                if not os.path.exists(model_path):
+                    self.logger.error(f"Vosk模型未找到: {model_path}")
+                    return False
+                    
+                model = vosk.Model(model_path)
+                q = queue.Queue()
+
+                def callback(indata, frames, time, status):
+                    if status:
+                        print(status, file=sys.stderr)
+                    q.put(bytes(indata))
+
+                with sd.RawInputStream(samplerate=16000, blocksize=8000, device=None, dtype='int16',
+                                       channels=1, callback=callback):
+                    rec = vosk.KaldiRecognizer(model, 16000)
+                    while not self._stop_event.is_set():
+                        data = q.get()
+                        if rec.AcceptWaveform(data):
+                            result = json.loads(rec.Result())
+                            text = result.get("text", "").replace(" ", "")
+                            if text:
+                                self.logger.info(f"监听到语音: {text}")
+                                for w in self.wake_words:
+                                    if w in text:
+                                        self.status_changed.emit("已唤醒，请提问…")
+                                        return True
+                        else:
+                            pass
+                            
+            except Exception as e:
+                self.logger.error(f"Vosk唤醒监听失败: {e}")
+                time.sleep(1.0)
+                return False
+
+        elif self.asr_engine.startswith("speech_recognition") and self._sr_available:
             try:
                 import speech_recognition as sr
                 r = sr.Recognizer()
@@ -113,8 +155,8 @@ class VoiceAssistantWorker(QObject):
                     r.adjust_for_ambient_noise(source, duration=0.8)
                     while not self._stop_event.is_set():
                         self.status_changed.emit("请说：小蔚 小蔚…")
-                        audio = r.listen(source, phrase_time_limit=3)
                         try:
+                            audio = r.listen(source, phrase_time_limit=3)
                             text = r.recognize_google(audio, language=self.asr_language)
                             text = (text or "").strip()
                             if text:
@@ -129,19 +171,62 @@ class VoiceAssistantWorker(QObject):
                 self.logger.error(f"唤醒监听失败: {e}")
                 time.sleep(1.0)
                 return False
-        elif self.asr_engine == "offline_vosk" and self._vosk_available:
-            # 简化：此处可扩展Vosk关键字识别，当前返回False作为占位
-            self.logger.warning("Vosk关键字监听未实现，将回退到离线整句识别")
-            return False
         else:
             self.logger.warning("ASR引擎不可用，无法语音唤醒")
             return False
-
+ 
         return False
 
     def _listen_user_question(self) -> Optional[str]:
         """在唤醒后短时间内收听用户问题并转文字"""
-        if self.asr_engine.startswith("speech_recognition") and self._sr_available:
+        if self.asr_engine == "offline_vosk" and self._vosk_available:
+            try:
+                import vosk
+                import sounddevice as sd
+                import json
+                
+                model_path = "models/vosk-model-small-cn-0.22"
+                model = vosk.Model(model_path)
+                q = queue.Queue()
+
+                def callback(indata, frames, time, status):
+                    q.put(bytes(indata))
+
+                self.status_changed.emit("请说出你的问题…")
+                
+                # 收集语音直到静音或超时
+                text_accumulated = ""
+                start_time = time.time()
+                
+                with sd.RawInputStream(samplerate=16000, blocksize=8000, device=None, dtype='int16',
+                                       channels=1, callback=callback):
+                    rec = vosk.KaldiRecognizer(model, 16000)
+                    while (time.time() - start_time) < self.max_listen_seconds:
+                        try:
+                            data = q.get(timeout=0.5)
+                            if rec.AcceptWaveform(data):
+                                result = json.loads(rec.Result())
+                                text = result.get("text", "").replace(" ", "")
+                                if text:
+                                    text_accumulated += text
+                                    # 如果识别到足够长度的文本，可以提前结束
+                                    if len(text_accumulated) > 2:
+                                        return text_accumulated
+                        except queue.Empty:
+                            continue
+                            
+                    # 处理剩余的音频
+                    result = json.loads(rec.FinalResult())
+                    text = result.get("text", "").replace(" ", "")
+                    text_accumulated += text
+                    
+                return text_accumulated if text_accumulated else None
+
+            except Exception as e:
+                self.logger.error(f"Vosk识别失败: {e}")
+                return None
+
+        elif self.asr_engine.startswith("speech_recognition") and self._sr_available:
             try:
                 import speech_recognition as sr
                 r = sr.Recognizer()
@@ -159,7 +244,6 @@ class VoiceAssistantWorker(QObject):
                 self.logger.error(f"录音失败: {e}")
                 return None
 
-        # Vosk 可在此实现
         return None
 
     def _ask_llm(self, user_text: str) -> str:

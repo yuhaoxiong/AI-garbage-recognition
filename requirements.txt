@@ -27,6 +27,8 @@ requests>=2.31.0
 # 数据处理
 Pillow>=10.0.0
 speechrecognition>=3.10.0 ; sys_platform == "win32" or sys_platform == "linux"
+PyAudio>=0.2.14 ; sys_platform == "win32" or sys_platform == "linux"
+sounddevice>=0.4.6
 vosk>=0.3.45 ; sys_platform == "linux"
 
 # 测试框架

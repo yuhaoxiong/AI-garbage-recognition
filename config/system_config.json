@@ -79,7 +79,7 @@
       "小蔚",
       "小蔚小蔚"
     ],
-    "asr_engine": "speech_recognition_google",
+    "asr_engine": "offline_vosk",
     "asr_language": "zh-CN",
     "max_listen_seconds": 2.0,
     "silence_timeout": 0.5,
