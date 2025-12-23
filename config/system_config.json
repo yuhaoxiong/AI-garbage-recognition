@@ -59,7 +59,7 @@
   },
   "api": {
     "api_url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
-    "api_key": "sk-a7f2419e2b6242b7bf1e7ab10158dc49",
+    "api_key": "",
     "model_name": "qwen-vl-max-2024-10-30",
     "max_retries": 3,
     "timeout": 30
